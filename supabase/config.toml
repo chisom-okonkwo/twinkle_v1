@@ -1,0 +1,4 @@
+project_id = "twinkle_v1"
+
+[functions.capture]
+verify_jwt = false

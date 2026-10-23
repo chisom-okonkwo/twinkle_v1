@@ -1,15 +1,15 @@
 # Twinkle V1
 
-Minimal authentication and private text notes, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
+Private text, photo, and audio notes, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
 
 ## Connected backend
 
 - Supabase project: **Twinkle V1**, organization **Twinkle**, region **us-east-1**.
 - Project reference: `lvrmixdkkdrtssdtggnw`.
 - [Supabase dashboard](https://supabase.com/dashboard/project/lvrmixdkkdrtssdtggnw).
-- Initial notes migration is already applied. Local migration filenames match remote history. Do not rerun it in the SQL editor on this project.
+- Both notes and media-capture migrations are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
 
-No separate backend, media buckets, AI integrations, or notification services are required for this foundation.
+Photo/audio capture uses a private Storage bucket and an authenticated Supabase Edge Function calling OpenAI. The function is deployed and its server-side OpenAI key is configured. See [capture setup, Android checks, and limitations](./docs/CAPTURE.md). FR-07 and subsequent requirements are not implemented.
 
 ## Local setup
 
@@ -32,7 +32,7 @@ Get the publishable key from the project's **Connect** dialog or **Settings → 
 npx expo start --clear
 ```
 
-Open on Android or iOS using an Expo Go version compatible with SDK 58, or a development build that includes the installed native modules. New development builds must include SecureStore and the Router dependencies. No native directories were created or edited. Fully reload the app after changing environment values. Missing configuration displays setup guidance instead of contacting a dummy backend.
+Use a development build that includes the installed native modules and camera/microphone permission configuration; rebuild an older development client after these additions. See the capture guide for device checks. No native directories were created or edited. Fully reload the app after changing environment values. Missing configuration displays setup guidance instead of contacting a dummy backend.
 
 For EAS builds, configure the same two public values in the appropriate EAS environment. Values in an ignored local file are not a substitute for build environment configuration.
 
@@ -46,11 +46,11 @@ For EAS builds, configure the same two public values in the appropriate EAS envi
 ## Privacy and ownership
 
 - `EXPO_PUBLIC_*` values are embedded in the app and are **public**, even in `.env.local`. A Supabase publishable key is intended for this use. RLS and table permissions protect the data.
-- Never put `service_role`, `sb_secret_` keys, database passwords, management access tokens, or OpenAI keys in the app, environment example, or Git. No privileged credentials were needed or written for this integration.
+- Never put `service_role`, `sb_secret_` keys, database passwords, management access tokens, or OpenAI keys in the app, environment example, or Git. The capture function uses privileged credentials only in Supabase's server environment.
 - On Android/iOS, auth sessions are encrypted with Expo SecureStore. The adapter splits large sessions into small values to support platform size limits and preserves the previous session if a replacement write fails. Tokens are available only while the device is unlocked and do not migrate with an iOS backup. iOS Keychain data can persist across reinstalls; explicitly sign out on shared test devices.
 - The optional web development target uses per-tab browser `sessionStorage`, which is accessible to JavaScript and clears when the tab closes. It does not provide native SecureStore's encryption guarantees.
 - Notes stay in Supabase and application memory; there is no local note cache. Sign-out removes the session and unmounts account-specific note state. Unsaved drafts are not stored offline.
-- The `notes` table has an owner foreign key, original content, capture method, and server-managed creation/update timestamps. Only text creation is implemented. Optional media/context fields can be added in later migrations.
+- The `notes` table has an owner foreign key, editable content, capture method, optional source-capture reference, and server-managed creation/update timestamps. Photo/audio originals remain in private Storage; abandoned uploads expire and are cleaned up hourly.
 - RLS restricts SELECT/INSERT/UPDATE/DELETE to the owner. Column privileges additionally prevent clients from altering ownership, IDs, capture method, or timestamps. Anonymous users have no table privileges. Deleting an auth user cascades to their notes.
 - Notes reject blank content and cap content at 100,000 characters. Lists load 30 notes at a time using a timestamp/ID cursor, newest edited first. Failed saves preserve the draft for retry; successful saves return to Notes Home.
 
@@ -86,6 +86,7 @@ src/app/sign-in.tsx            Email/password registration and sign-in
 src/app/index.tsx              Notes Home and paginated, virtualized list
 src/app/note.tsx               Private note editor and navigation protection
 src/components/note-ui.tsx     Note cards, text actions, and confirmation dialogs
+src/components/capture-panel.tsx Photo/audio capture, preview, review, and retry
 src/providers/auth-provider.tsx Session restoration and foreground token refresh
 src/lib/supabase.ts            Typed client and public configuration validation
 src/lib/session-storage*       Platform-specific auth persistence
@@ -93,6 +94,9 @@ src/lib/chunked-storage.ts     Large-session storage adapter
 src/lib/database.types.ts      Generated from the live Supabase schema
 src/lib/notes.ts               App-facing note operations
 src/lib/notes-repository.ts    Typed, platform-independent Supabase note queries
+src/lib/captures.ts            Private media staging, upload, processing, and cleanup
+supabase/functions/capture/    Authenticated processing and maintenance endpoint
+supabase/functions/_shared/   Validated capture contract and server OpenAI client
 supabase/migrations/           Versioned schema, permissions, RLS, timestamp trigger
 supabase/tests/                Transactional database security checks
 ```
@@ -108,7 +112,7 @@ npm test
 npx expo export --platform android --platform ios
 ```
 
-`npm test` runs eight local tests covering note validation, original content, owner scoping, cursor pagination, stale writes/deletes, missing notes/API errors, and the existing session-storage checks. The live integration test is skipped unless explicitly configured.
+`npm test` runs sixteen local tests covering note validation, owner scoping, pagination, stale writes/deletes, session storage, media validation, and the OpenAI request/response contract. Live integration tests are skipped unless explicitly configured; the capture guide documents their additional fixtures.
 
 The live test was run successfully against the connected Supabase project using two disposable, confirmed accounts. It verified real password sign-in, text CRUD, original whitespace/Unicode, automatic timestamps, persistence through a separate authenticated client, 34 notes across two pages without duplicates, stale-operation rejection, sign-out, and raw API attempts to bypass ownership. Test notes and accounts were removed afterwards.
 
@@ -128,7 +132,7 @@ The public client key was also checked against the live Data API: unauthenticate
 
 `npm audit` currently reports 19 high-severity findings in the Expo/React Native dependency tree. The two underlying advisories concern `braces` 3.0.3 and `node-forge` 1.4.0, both present at the same versions in the original starter lockfile. Supabase packages are not flagged. The suggested forced fixes include incompatible framework downgrades; the existing SDK and React Native versions were preserved. Review compatible upstream fixes before release.
 
-For a different Supabase project, apply the migration once before using the app and regenerate `database.types.ts` from that project's schema. Use the Supabase CLI's documented migration/link workflow; do not put management credentials into Expo variables.
+For a different Supabase project, apply both migrations in order, configure the cleanup endpoint as described in the capture guide, deploy the function, and regenerate `database.types.ts` from that project's schema. Use the Supabase CLI's documented migration/link workflow; do not put management credentials into Expo variables.
 
 ## Documentation checked
 

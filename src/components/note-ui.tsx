@@ -39,7 +39,7 @@ export const NoteCard = memo(function NoteCard({ note, onOpen }: { note: Note; o
     style={({ pressed }) => [noteStyles.card, pressed && noteStyles.cardPressed]}>
     <Text style={noteStyles.noteTitle} numberOfLines={2}>{title}</Text>
     {preview ? <Text style={noteStyles.preview} numberOfLines={3}>{preview}</Text> : null}
-    <Text style={noteStyles.meta}>Edited {formatNoteDate(note.updated_at)}</Text>
+    <Text style={noteStyles.meta}>{note.capture_method === 'image' ? 'Photo · ' : note.capture_method === 'audio' ? 'Audio · ' : ''}Edited {formatNoteDate(note.updated_at)}</Text>
   </Pressable>;
 });
 

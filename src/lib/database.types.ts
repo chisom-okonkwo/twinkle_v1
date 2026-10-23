@@ -14,12 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      note_captures: {
+        Row: {
+          attempts: number
+          byte_size: number
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          mime_type: string
+          processing_started_at: string | null
+          result: Json | null
+          status: string
+          storage_path: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          byte_size: number
+          created_at?: string
+          expires_at?: string
+          id: string
+          kind: string
+          mime_type: string
+          processing_started_at?: string | null
+          result?: Json | null
+          status?: string
+          storage_path: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          byte_size?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          mime_type?: string
+          processing_started_at?: string | null
+          result?: Json | null
+          status?: string
+          storage_path?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           capture_method: string
           content: string
           created_at: string
           id: string
+          source_capture_id: string | null
           updated_at: string
           user_id: string
         }
@@ -28,6 +74,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          source_capture_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -36,17 +83,72 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          source_capture_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_source_capture_id_fkey"
+            columns: ["source_capture_id"]
+            isOneToOne: true
+            referencedRelation: "note_captures"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      authorize_capture_cleanup: { Args: { token: string }; Returns: boolean }
+      claim_capture_deletion: {
+        Args: { caller_id?: string; capture_id: string }
+        Returns: {
+          attempts: number
+          byte_size: number
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          mime_type: string
+          processing_started_at: string | null
+          result: Json | null
+          status: string
+          storage_path: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "note_captures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      claim_note_capture: {
+        Args: { caller_id: string; capture_id: string }
+        Returns: {
+          attempts: number
+          byte_size: number
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          mime_type: string
+          processing_started_at: string | null
+          result: Json | null
+          status: string
+          storage_path: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "note_captures"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never

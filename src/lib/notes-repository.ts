@@ -3,6 +3,7 @@ import type { Database } from './database.types';
 
 export type Note = Database['public']['Tables']['notes']['Row'];
 export type NoteVersion = Pick<Note, 'id' | 'updated_at'>;
+export type NoteSource = { id: string; kind: 'image' | 'audio' };
 export const MAX_NOTE_LENGTH = 100_000;
 export const NOTES_PAGE_SIZE = 30;
 
@@ -40,13 +41,18 @@ export function createNotesRepository(client: SupabaseClient<Database>) {
       if (!data) throw new Error('This note is no longer available. It may have been deleted in another session.');
       return data;
     },
-    async save(userId: string, content: string, previous?: NoteVersion) {
+    async save(userId: string, content: string, previous?: NoteVersion, source?: NoteSource) {
       validateNoteContent(content);
       const query = previous
         ? client.from('notes').update({ content }).eq('user_id', userId)
           .eq('id', previous.id).eq('updated_at', previous.updated_at)
-        : client.from('notes').insert({ user_id: userId, content });
+        : client.from('notes').insert({ user_id: userId, content, ...(source ? { id: source.id, capture_method: source.kind, source_capture_id: source.id } : {}) });
       const { data, error } = await query.select().maybeSingle();
+      if (!previous && source && error) {
+        const existing = await client.from('notes').select('*').eq('id', source.id).eq('user_id', userId).single();
+        if (!existing.error && existing.data?.source_capture_id === source.id && existing.data.content === content) return existing.data;
+        if (existing.data) throw new Error('This capture is already saved. Open it from Your notes to continue editing.');
+      }
       if (error) throw error;
       if (!data) throw new NoteConflictError();
       return data;
