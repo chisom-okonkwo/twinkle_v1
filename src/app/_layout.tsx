@@ -13,7 +13,10 @@ function Routes() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!session}><Stack.Screen name="sign-in" /></Stack.Protected>
-      <Stack.Protected guard={Boolean(session)}><Stack.Screen name="index" /></Stack.Protected>
+      <Stack.Protected guard={Boolean(session)}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="note" />
+      </Stack.Protected>
     </Stack>
   );
 }
