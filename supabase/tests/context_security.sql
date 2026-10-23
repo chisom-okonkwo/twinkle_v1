@@ -40,6 +40,8 @@ update public.notes set content='Now considering the project' where id=current_s
 set local role service_role;
 do $$ declare c jsonb=current_setting('test.first_claim')::jsonb; begin
   if public.finish_note_context(current_setting('test.note')::uuid,current_setting('test.owner_a')::uuid,(c->>'revision')::bigint,(c->>'token')::uuid,'{}',null,'test') then raise exception 'Stale response overwrote edit'; end if;
+  perform public.fail_note_context(current_setting('test.note')::uuid,current_setting('test.owner_a')::uuid,(c->>'revision')::bigint,(c->>'token')::uuid,'timeout');
+  if (select status from public.note_contexts where note_id=current_setting('test.note')::uuid)<>'pending' then raise exception 'Stale failure overwrote edit'; end if;
   if (select user_context from public.note_contexts where note_id=current_setting('test.note')::uuid)<>'I want to remember this' then raise exception 'Edit erased user context'; end if;
 end $$;
 select set_config('test.second_claim',public.claim_note_context(current_setting('test.note')::uuid,current_setting('test.owner_a')::uuid)::text,true);
@@ -71,7 +73,22 @@ do $$ declare c jsonb=current_setting('test.last_claim')::jsonb; begin
   if (select user_context from public.note_contexts where note_id=current_setting('test.note')::uuid)<>'I want to remember this' then raise exception 'AI erased user context'; end if;
 end $$;
 set local role authenticated;
-delete from public.notes where id=current_setting('test.note')::uuid;
+with n as (insert into public.notes(content) values('Original survives an AI timeout') returning id) select set_config('test.failure_note',id::text,true) from n;
+set local role service_role;
+select set_config('test.failure_claim',public.claim_note_context(current_setting('test.failure_note')::uuid,current_setting('test.owner_a')::uuid)::text,true);
+do $$ declare c jsonb=current_setting('test.failure_claim')::jsonb; begin
+  perform public.fail_note_context(current_setting('test.failure_note')::uuid,current_setting('test.owner_a')::uuid,(c->>'revision')::bigint,(c->>'token')::uuid,'timeout');
+end $$;
+set local role authenticated;
+do $$ begin
+  if (select content from public.notes where id=current_setting('test.failure_note')::uuid)<>'Original survives an AI timeout' then raise exception 'AI failure lost note'; end if;
+  if (select status from public.note_contexts where note_id=current_setting('test.failure_note')::uuid)<>'failed' then raise exception 'Failure status missing'; end if;
+end $$;
+update public.notes set content='I can edit while AI is unavailable' where id=current_setting('test.failure_note')::uuid;
+do $$ begin
+  if (select generated_context is not null or status<>'pending' from public.note_contexts where note_id=current_setting('test.failure_note')::uuid) then raise exception 'Editing failed context did not invalidate and requeue'; end if;
+end $$;
+delete from public.notes where id in (current_setting('test.note')::uuid,current_setting('test.failure_note')::uuid);
 do $$ begin
   if exists(select 1 from public.note_contexts where note_id=current_setting('test.note')::uuid) then raise exception 'Context did not cascade with note'; end if;
 end $$;

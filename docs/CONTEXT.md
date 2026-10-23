@@ -24,7 +24,7 @@ No new queue, cron, scheduling, or worker service is introduced. Undelivered wor
 
 The model may suggest one meaningful ambiguous reference, but cannot generate arbitrary questions. The server accepts only an actual **that/this/the internship, project, event, decision, or task** reference and selects a fixed brief question, such as “Which internship were you considering?”
 
-The model is instructed to suggest nothing for simple or sufficiently detailed notes, references identified elsewhere, and sensitive/intrusive details. The conservative English templates favor no question. They do not request names, relationships, health, location, contacts, or financial information. No device metadata is collected. User additions remain explicit supplemental information and are not automatically sent back to the model.
+The model is instructed to suggest nothing for simple or sufficiently detailed notes, references identified elsewhere, and sensitive/intrusive details. A conservative server-side English sensitivity/privacy guard also suppresses questions even if the model proposes one. The narrow templates favor no question and do not explicitly request names, relationships, health, location, contacts, or financial information; implicit sensitivity still needs judgment. No device metadata is collected. User additions remain explicit supplemental information and are not automatically sent back to the model.
 
 ## Data and security
 
@@ -78,5 +78,7 @@ TWINKLE_TEST_FIXTURES=/private/path/test-users.json TWINKLE_MEDIA_FIXTURES=/priv
 ```
 
 Live tests covered reminders, ambiguous internships, fully identified events/projects, conditional intentions, instruction-like data, result reuse, answer persistence/edit/removal, opt-out, and cross-account denial. Photo/audio notes completed enrichment while their capture/security tests passed. Local tests cover invalid/refused/incomplete output, unsupported excerpts, negation/qualification, and prompt restrictions. Browser checks cover immediate note save and optional answer persistence. Android/iOS exports pass; physical context UI interactions still require device checks.
+
+The [contextual quality review](CONTEXT-EVALUATION.md) adds a repeatable eight-scenario evaluation plus ambiguity, privacy and untrusted-input controls, with recorded synthetic outputs. It documents grounding, attribution, prompting and recovery fixes within FR-07–FR-09.
 
 AI can still misclassify which phrases matter or miss context; excerpts do not guarantee perfect semantic interpretation. Review the full note when needed. Prompts intentionally support only a few English references. Background completion is best effort; interrupted work may need foreground recovery/manual retry. Historical notes are not batch-processed. No `PROGRESS.md` exists; this guide records status. FR-10 and later requirements remain unimplemented.

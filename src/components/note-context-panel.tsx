@@ -12,6 +12,7 @@ export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty }:
 }) {
   const [data, setData] = useState<{ row: NoteContext; enabled: boolean; hash: string; version: string; checkedAt: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -32,11 +33,12 @@ export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty }:
       const [row, enabled, hash] = await Promise.all([getNoteContext(userId, note.id), getContextPreference(userId), contextHash(note.content)]);
       if (!active.current || current !== request.current) return;
       setData({ row, enabled, hash, version: note.updated_at, checkedAt: Date.now() });
+      setLoadError(null);
       if (enabled && row.status === 'pending' && !starting.current) {
         starting.current = true;
         void startSavedContext(userId, note.id).catch(() => {}).finally(() => { starting.current = false; });
       }
-    } catch (cause) { if (active.current && current === request.current) setError(errorMessage(cause)); }
+    } catch (cause) { if (active.current && current === request.current) setLoadError(errorMessage(cause)); }
     finally { if (current === request.current) fetching.current = false; }
   }, [userId, note.id, note.content, note.updated_at]);
   const invalidate = useCallback(() => { active.current = false; request.current++; }, []);
@@ -87,10 +89,11 @@ export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty }:
     finally { if (active.current) setBusy(false); }
   }
   const locked = busy || disabled;
+  const visibleError = error ?? loadError;
   function reloadContext() { setConfirmReload(false); setEditing(false); onDirty(false); setError(null); void refresh(); }
   return <View style={{ gap: 10, marginTop: 16 }}>
     <Text style={styles.label}>A little context</Text>
-    {!data ? <><Message text={error} error />{!error ? <ActivityIndicator accessibilityLabel="Loading note context" color="#55458d" /> : <TextAction title="Reload context" onPress={() => void refresh()} />}</> : <>
+    {!data ? <><Message text={visibleError} error />{!visibleError ? <ActivityIndicator accessibilityLabel="Loading note context" color="#55458d" /> : <TextAction title="Reload context" onPress={() => void refresh()} />}</> : <>
       {noteDirty ? <Text style={noteStyles.meta}>Save your note changes to refresh generated context.</Text> : null}
       {current && ['pending', 'processing'].includes(row!.status) ? <Text style={noteStyles.meta}>Context is being prepared. Your note is already saved.</Text> : null}
       {current && ['pending', 'processing'].includes(row!.status) ? <TextAction title="Refresh context" disabled={locked} onPress={() => void refresh()} /> : null}
@@ -126,8 +129,8 @@ export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty }:
         <Action secondary title={busy ? 'Saving context…' : 'Save added context'} disabled={locked} onPress={() => void update({ user_context: extra, answer, ...(answer.trim() ? { prompt_dismissed: true } : {}) }, editBase.current ?? undefined)} />
         <TextAction title="Cancel context changes" disabled={locked} onPress={() => { setEditing(false); onDirty(false); }} />
       </View> : null}
-      <Message text={error} error />
-      {error ? <TextAction title="Reload context" disabled={locked} onPress={() => { if (editing) setConfirmReload(true); else reloadContext(); }} /> : null}
+      <Message text={visibleError} error />
+      {visibleError ? <TextAction title="Reload context" disabled={locked} onPress={() => { if (editing) setConfirmReload(true); else reloadContext(); }} /> : null}
     </>}
     <Confirmation visible={confirmRemove} title="Remove your added context?" description="Your original note and generated context will stay. This removes your added details and answer." confirmLabel="Remove context" onCancel={() => setConfirmRemove(false)} onConfirm={() => void update({ user_context: '', answer: '', prompt_dismissed: true })} />
     <Confirmation visible={confirmReload} title="Reload your added context?" description="Your unsaved context changes will be discarded. Copy anything you want to keep before reloading." confirmLabel="Discard and reload context" onCancel={() => setConfirmReload(false)} onConfirm={reloadContext} />
