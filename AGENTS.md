@@ -23,6 +23,11 @@ npx expo install --fix      # fix incompatible package versions
 
 Run lint and typecheck before declaring any task done.
 
+## Git workflow
+
+- After an implementation has been confirmed and its relevant checks pass, create a commit with a clear message and push it to `main` on the connected GitHub repository.
+- Keep private credentials and local environment files out of commits. Do not force-push or overwrite remote work.
+
 ## Navigation & Routing
 
 - Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
