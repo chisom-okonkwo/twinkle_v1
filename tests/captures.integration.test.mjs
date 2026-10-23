@@ -6,6 +6,8 @@ import test from 'node:test';
 import { createClient } from '@supabase/supabase-js';
 import { createNotesRepository } from '../src/lib/notes-repository.ts';
 import { validateResult } from '../supabase/functions/_shared/capture-contract.ts';
+import { validateContextAnalysis } from '../supabase/functions/_shared/context-contract.ts';
+import { createContextRepository } from '../src/lib/context-repository.ts';
 
 // Opt-in: requires two empty, confirmed disposable users and synthetic fixtures.
 // This test makes a small number of billed OpenAI requests through the deployed function.
@@ -23,6 +25,18 @@ test('live capture: private originals, extraction, transcription, caching, savin
   const repo=createNotesRepository(a);
   for (const [api,user] of [[a,users[0]],[b,users[1]],[fresh,users[0]]]) {
     assert.ifError((await api.auth.signInWithPassword({email:user.email,password:user.password})).error);
+  }
+  if(process.env.TWINKLE_VERIFY_CONTEXT) await createContextRepository(a).setPreference(users[0].id,true);
+  async function verifyContext(note){
+    if(!process.env.TWINKLE_VERIFY_CONTEXT)return;
+    assert.ifError((await a.functions.invoke('enrich-note',{body:{noteId:note.id}})).error);
+    for(let attempt=0;attempt<65;attempt++){
+      const row=await createContextRepository(a).get(users[0].id,note.id);
+      if(row.status==='completed'){validateContextAnalysis({...row.generated_context,missing_context:null},note.content);return;}
+      if(row.status==='failed')throw new Error(`Media-note context failed: ${row.error_code}`);
+      await new Promise(resolve=>setTimeout(resolve,1200));
+    }
+    throw new Error('Media-note context did not complete');
   }
   async function stage(file,kind,mime,bytesOverride) {
     const bytes=bytesOverride ?? await readFile(join(process.env.TWINKLE_MEDIA_FIXTURES,file));
@@ -61,6 +75,7 @@ test('live capture: private originals, extraction, transcription, caching, savin
     const content=`${printed.text}\nReviewed before saving.`;
     const saved=await repo.save(users[0].id,content,undefined,{id:photo.id,kind:'image'});notes.push(saved.id);
     assert.equal(saved.capture_method,'image');assert.equal(saved.source_capture_id,photo.id);
+    await verifyContext(saved);
     assert.equal((await repo.save(users[0].id,content,undefined,{id:photo.id,kind:'image'})).id,saved.id);
     assert.equal((await createNotesRepository(fresh).get(users[0].id,saved.id)).content,content);
     assert.ok((await a.functions.invoke('capture',{body:{action:'discard',captureId:photo.id}})).error);
@@ -76,6 +91,7 @@ test('live capture: private originals, extraction, transcription, caching, savin
     for(const phrase of ['lemons','fresh bread','maya','original words']) assert.ok(transcript.text.toLowerCase().includes(phrase));
     const audioNote=await repo.save(users[0].id,transcript.text,undefined,{id:audio.id,kind:'audio'});notes.push(audioNote.id);
     assert.equal(audioNote.capture_method,'audio');
+    await verifyContext(audioNote);
     assert.equal((await createNotesRepository(fresh).get(users[0].id,audioNote.id)).content,transcript.text);
     const forged=await stage(null,'image','image/jpeg',new TextEncoder().encode('not a JPEG'));
     await assert.rejects(runCapture(forged),/contents do not match/);

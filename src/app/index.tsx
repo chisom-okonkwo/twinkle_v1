@@ -8,6 +8,7 @@ import { Action, errorMessage, Message, styles } from '../components/ui';
 import { listNotes, NOTES_PAGE_SIZE, type Note } from '../lib/notes';
 import { getSupabase } from '../lib/supabase';
 import { useAuth } from '../providers/auth-provider';
+import { ContextPreferences } from '../components/context-preferences';
 
 export default function NotesRoute() {
   const { session } = useAuth();
@@ -90,6 +91,7 @@ function NotesHome({ userId }: { userId: string }) {
           <Text accessibilityRole="header" style={styles.title}>Your notes</Text>
           <Text style={styles.subtitle}>Thoughts, ideas, and things to keep close.</Text>
           <Action title="+ New note" onPress={() => router.navigate('/note')} disabled={signingOut} />
+          <ContextPreferences userId={userId} />
           {error ? <View style={noteStyles.banner}>
             <Message text={`Couldn’t refresh your notes. ${error}`} error />
             <TextAction title="Try again" disabled={loading} onPress={refresh} />

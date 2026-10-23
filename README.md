@@ -1,15 +1,15 @@
 # Twinkle V1
 
-Private text, photo, and audio notes, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
+Private text, photo, and audio notes with optional context enrichment, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
 
 ## Connected backend
 
 - Supabase project: **Twinkle V1**, organization **Twinkle**, region **us-east-1**.
 - Project reference: `lvrmixdkkdrtssdtggnw`.
 - [Supabase dashboard](https://supabase.com/dashboard/project/lvrmixdkkdrtssdtggnw).
-- All notes/media migrations, including the photo-limit and upload-recovery update, are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
+- All notes, media, and context migrations are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
 
-Photo/audio capture uses a private Storage bucket and an authenticated Supabase Edge Function calling OpenAI. The function is deployed and its server-side OpenAI key is configured. See [capture setup, Android checks, and limitations](./docs/CAPTURE.md). FR-07 and subsequent requirements are not implemented.
+Photo/audio capture uses a private Storage bucket and an authenticated Supabase Edge Function calling OpenAI. See [capture setup and checks](./docs/CAPTURE.md). Optional context enrichment and minimal questions are implemented through FR-09; see [context consent, architecture, Android checks, and limitations](./docs/CONTEXT.md). Both functions are deployed and reuse the server-side OpenAI key. FR-10 and later requirements remain unimplemented.
 
 ## Local setup
 
@@ -87,6 +87,8 @@ src/app/index.tsx              Notes Home and paginated, virtualized list
 src/app/note.tsx               Private note editor and navigation protection
 src/components/note-ui.tsx     Note cards, text actions, and confirmation dialogs
 src/components/capture-panel.tsx Photo/audio capture, preview, review, and retry
+src/components/note-context-panel.tsx Secondary context display, answers, and additions
+src/components/context-preferences.tsx Enrichment opt-in and opt-out
 src/providers/auth-provider.tsx Session restoration and foreground token refresh
 src/lib/supabase.ts            Typed client and public configuration validation
 src/lib/session-storage*       Platform-specific auth persistence
@@ -95,6 +97,9 @@ src/lib/database.types.ts      Generated from the live Supabase schema
 src/lib/notes.ts               App-facing note operations
 src/lib/notes-repository.ts    Typed, platform-independent Supabase note queries
 src/lib/captures.ts            Private media staging, upload, processing, and cleanup
+src/lib/context.ts             Nonblocking processing and foreground recovery
+src/lib/context-repository.ts  Owner preferences and user-context persistence
+supabase/functions/enrich-note/ Authenticated background context analysis
 supabase/functions/capture/    Authenticated processing and maintenance endpoint
 supabase/functions/_shared/   Validated capture contract and server OpenAI client
 supabase/migrations/           Versioned schema, permissions, RLS, timestamp trigger

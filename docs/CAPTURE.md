@@ -82,4 +82,4 @@ To rerun the billed live capture test, provide an external, private JSON file co
 TWINKLE_TEST_FIXTURES=/private/path/test-users.json TWINKLE_MEDIA_FIXTURES=/private/path/media node --env-file=.env.local --test tests/captures.integration.test.mjs
 ```
 
-The test removes its own notes/captures. Delete the disposable accounts and private fixture file afterwards. Never use real user accounts. No `PROGRESS.md` exists in this repository; this guide records the implementation status. FR-07+, real-time transcription, enrichment, flashbacks, and notifications remain out of scope.
+The test removes its own notes/captures. Delete the disposable accounts and private fixture file afterwards. Never use real user accounts. No `PROGRESS.md` exists in this repository. Optional context retention is now covered in [CONTEXT.md](./CONTEXT.md). Real-time transcription, flashbacks, and notifications remain out of scope.

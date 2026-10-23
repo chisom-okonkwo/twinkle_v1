@@ -2,3 +2,9 @@ project_id = "twinkle_v1"
 
 [functions.capture]
 verify_jwt = false
+
+[functions.enrich-note]
+verify_jwt = false
+
+[edge_runtime]
+policy = "per_worker"

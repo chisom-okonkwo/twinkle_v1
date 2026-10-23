@@ -9,6 +9,7 @@ import { deleteNote, getNote, MAX_NOTE_LENGTH, NoteConflictError, saveNote, type
 import { useAuth } from '../providers/auth-provider';
 import { CapturePanel, SourcePreview } from '../components/capture-panel';
 import { type CaptureDraft, type CaptureRecord, discardDraft, loadSavedSource, removeLocalAsset } from '../lib/captures';
+import { NoteContextPanel } from '../components/note-context-panel';
 
 export default function NoteRoute() {
   const { session } = useAuth();
@@ -33,9 +34,11 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   const [retry, setRetry] = useState(0);
   const [draft, setDraft] = useState<CaptureDraft | null>(null);
   const [captureBusy, setCaptureBusy] = useState(false);
+  const [contextDirty, setContextDirty] = useState(false);
   const active = useRef(true);
   const operation = useRef(false);
-  const dirty = content !== (note?.content ?? '') || Boolean(draft);
+  const noteDirty = content !== (note?.content ?? '') || Boolean(draft);
+  const dirty = noteDirty || contextDirty;
 
   const disablePrevention = usePreventRemove((dirty || Boolean(busy) || captureBusy) && !leaving, ({ repeat }) => {
     if (!operation.current && !captureBusy) setDiscardAction(() => repeat);
@@ -89,8 +92,10 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
     try {
       if (kind === 'save') {
         if (draft && (!draft.processed || !draft.record)) throw new Error('Process the source and review the text before saving.');
-        await saveNote(userId, content, note ?? undefined, draft?.record ? { id: draft.record.id, kind: draft.asset.kind } : undefined);
+        const saved = await saveNote(userId, content, note ?? undefined, draft?.record ? { id: draft.record.id, kind: draft.asset.kind } : undefined);
         if (draft) removeLocalAsset(draft.asset);
+        // Preserve an independently edited context draft when the main note saves.
+        if (contextDirty && note) { setNote(saved); setDraft(null); return; }
       }
       else if (note) await deleteNote(userId, note);
       if (active.current) leave();
@@ -111,7 +116,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
         <TextAction title="‹ Notes" onPress={back} disabled={Boolean(busy) || captureBusy} />
         <Text style={noteStyles.meta}>{id ? 'Edit note' : 'New note'}</Text>
         <Action title={busy === 'save' ? 'Saving…' : 'Save'} onPress={() => void persist('save')}
-          disabled={loading || Boolean(loadError) || Boolean(busy) || captureBusy || Boolean(draft && !draft.processed) || !dirty || !content.trim()} />
+          disabled={loading || Boolean(loadError) || Boolean(busy) || captureBusy || Boolean(draft && !draft.processed) || !noteDirty || !content.trim()} />
       </View>
       {loading ? <View style={noteStyles.state}><ActivityIndicator accessibilityLabel="Loading note" color="#55458d" /></View>
         : loadError ? <View style={noteStyles.editorBody}>
@@ -133,6 +138,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
             </> : <Text style={noteStyles.meta}>Only you can see your notes.</Text>}
             <Text style={noteStyles.meta}>{dirty ? 'Unsaved changes' : note ? 'Saved in your private notes' : 'Save when you’re ready'}</Text>
             {note?.source_capture_id ? <SavedSource captureId={note.source_capture_id} /> : null}
+            {note ? <NoteContextPanel userId={userId} note={note} noteDirty={noteDirty} disabled={Boolean(busy)} onDirty={setContextDirty} /> : null}
             {note ? <TextAction title={busy === 'delete' ? 'Deleting…' : 'Delete note'} destructive
               disabled={Boolean(busy)} onPress={() => setConfirmDelete(true)} /> : null}
           </View>

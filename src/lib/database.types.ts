@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      context_preferences: {
+        Row: {
+          enabled: boolean
+          user_id: string
+        }
+        Insert: {
+          enabled?: boolean
+          user_id: string
+        }
+        Update: {
+          enabled?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       note_captures: {
         Row: {
           attempts: number
@@ -58,6 +73,83 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      note_contexts: {
+        Row: {
+          answer: string
+          attempts: number
+          error_code: string | null
+          generated_context: Json | null
+          last_completed_at: string | null
+          model: string | null
+          note_id: string
+          processing_started_at: string | null
+          processing_token: string | null
+          prompt_anchor: string | null
+          prompt_dismissed: boolean
+          prompt_kind: string | null
+          prompt_question: string | null
+          prompt_revision: number | null
+          revision: number
+          source_hash: string
+          status: string
+          user_context: string
+          user_id: string
+          user_version: number
+        }
+        Insert: {
+          answer?: string
+          attempts?: number
+          error_code?: string | null
+          generated_context?: Json | null
+          last_completed_at?: string | null
+          model?: string | null
+          note_id: string
+          processing_started_at?: string | null
+          processing_token?: string | null
+          prompt_anchor?: string | null
+          prompt_dismissed?: boolean
+          prompt_kind?: string | null
+          prompt_question?: string | null
+          prompt_revision?: number | null
+          revision?: number
+          source_hash: string
+          status?: string
+          user_context?: string
+          user_id: string
+          user_version?: number
+        }
+        Update: {
+          answer?: string
+          attempts?: number
+          error_code?: string | null
+          generated_context?: Json | null
+          last_completed_at?: string | null
+          model?: string | null
+          note_id?: string
+          processing_started_at?: string | null
+          processing_token?: string | null
+          prompt_anchor?: string | null
+          prompt_dismissed?: boolean
+          prompt_kind?: string | null
+          prompt_question?: string | null
+          prompt_revision?: number | null
+          revision?: number
+          source_hash?: string
+          status?: string
+          user_context?: string
+          user_id?: string
+          user_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_contexts_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: true
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notes: {
         Row: {
@@ -148,6 +240,37 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      claim_note_context: {
+        Args: {
+          caller_id: string
+          manual?: boolean
+          retry?: boolean
+          target_id: string
+        }
+        Returns: Json
+      }
+      fail_note_context: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          code: string
+          expected_revision: number
+          target_id: string
+        }
+        Returns: undefined
+      }
+      finish_note_context: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          expected_revision: number
+          model_name: string
+          payload: Json
+          question: Json
+          target_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
