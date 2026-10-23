@@ -40,7 +40,27 @@
           "enableBackgroundPlayback": false,
           "enableBackgroundRecording": false
         }
-      ]
-    ]
+      ],
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "flashbacks",
+          "color": "#55458d"
+        }
+      ],
+      "expo-asset"
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "34a9ef10-c1aa-4988-b869-9b2b1d332260"
+      }
+    },
+    "owner": "chisom-okonkwo"
   }
 }

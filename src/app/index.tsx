@@ -8,6 +8,8 @@ import { Action, errorMessage, Message, styles } from '../components/ui';
 import { listNotes, NOTES_PAGE_SIZE, type Note } from '../lib/notes';
 import { getSupabase } from '../lib/supabase';
 import { useAuth } from '../providers/auth-provider';
+import { FlashbackCard } from '../components/flashback-card';
+import { clearRecallNotifications, unregisterRecallDevice } from '../lib/recall-notifications';
 import { ContextPreferences } from '../components/context-preferences';
 
 export default function NotesRoute() {
@@ -69,6 +71,8 @@ function NotesHome({ userId }: { userId: string }) {
     if (signingOut) return;
     setSigningOut(true);
     try {
+      await unregisterRecallDevice();
+      await clearRecallNotifications();
       const { error: signOutError } = await getSupabase().auth.signOut({ scope: 'local' });
       if (signOutError) throw signOutError;
     } catch (cause) {
@@ -92,6 +96,7 @@ function NotesHome({ userId }: { userId: string }) {
           <Text style={styles.subtitle}>Thoughts, ideas, and things to keep close.</Text>
           <Action title="+ New note" onPress={() => router.navigate('/note')} disabled={signingOut} />
           <ContextPreferences userId={userId} />
+          <FlashbackCard userId={userId} />
           {error ? <View style={noteStyles.banner}>
             <Message text={`Couldn’t refresh your notes. ${error}`} error />
             <TextAction title="Try again" disabled={loading} onPress={refresh} />

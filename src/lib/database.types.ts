@@ -29,6 +29,82 @@ export type Database = {
         }
         Relationships: []
       }
+      flashback_exclusions: {
+        Row: {
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          note_id: string
+          user_id?: string
+        }
+        Update: {
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashback_exclusions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: true
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flashbacks: {
+        Row: {
+          context_revision: number
+          created_at: string
+          id: string
+          message: string
+          note_id: string
+          quote: string
+          reason: string
+          source_hash: string
+          status: string
+          user_id: string
+          user_version: number
+          wording: string
+        }
+        Insert: {
+          context_revision: number
+          created_at?: string
+          id?: string
+          message: string
+          note_id: string
+          quote: string
+          reason: string
+          source_hash: string
+          status?: string
+          user_id: string
+          user_version: number
+          wording?: string
+        }
+        Update: {
+          context_revision?: number
+          created_at?: string
+          id?: string
+          message?: string
+          note_id?: string
+          quote?: string
+          reason?: string
+          source_hash?: string
+          status?: string
+          user_id?: string
+          user_version?: number
+          wording?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashbacks_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       note_captures: {
         Row: {
           attempts: number
@@ -189,12 +265,76 @@ export type Database = {
           },
         ]
       }
+      push_devices: {
+        Row: {
+          active: boolean
+          expo_token: string
+          installation_id: string
+          platform: string
+          registered_at: string
+          session_id: string
+          token_version: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          expo_token: string
+          installation_id: string
+          platform: string
+          registered_at?: string
+          session_id: string
+          token_version?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          expo_token?: string
+          installation_id?: string
+          platform?: string
+          registered_at?: string
+          session_id?: string
+          token_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recall_preferences: {
+        Row: {
+          detailed_previews: boolean
+          frequency: string
+          timezone: string
+          updated_at: string
+          user_id: string
+          window_end: number
+          window_start: number
+        }
+        Insert: {
+          detailed_previews?: boolean
+          frequency?: string
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+          window_end?: number
+          window_start?: number
+        }
+        Update: {
+          detailed_previews?: boolean
+          frequency?: string
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+          window_end?: number
+          window_start?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       authorize_capture_cleanup: { Args: { token: string }; Returns: boolean }
+      authorize_recall_scheduler: { Args: { secret: string }; Returns: boolean }
       claim_capture_deletion: {
         Args: { caller_id?: string; capture_id: string }
         Returns: {
@@ -271,6 +411,22 @@ export type Database = {
           target_id: string
         }
         Returns: boolean
+      }
+      recall_service: {
+        Args: { action: string; owner_id?: string; payload?: Json }
+        Returns: Json
+      }
+      register_recall_device: {
+        Args: { device_platform: string; installation: string; token: string }
+        Returns: undefined
+      }
+      respond_flashback: {
+        Args: { feedback: string; target_id: string }
+        Returns: undefined
+      }
+      unregister_recall_device: {
+        Args: { installation: string }
+        Returns: undefined
       }
     }
     Enums: {

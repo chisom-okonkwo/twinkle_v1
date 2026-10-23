@@ -8,3 +8,9 @@ verify_jwt = false
 
 [edge_runtime]
 policy = "per_worker"
+
+[functions.flashbacks]
+verify_jwt = false
+
+[functions.recall-scheduler]
+verify_jwt = false

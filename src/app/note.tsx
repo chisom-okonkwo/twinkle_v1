@@ -1,3 +1,4 @@
+import { NoteRecallControl } from '../components/note-recall-control';
 import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
@@ -139,6 +140,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
             <Text style={noteStyles.meta}>{dirty ? 'Unsaved changes' : note ? 'Saved in your private notes' : 'Save when you’re ready'}</Text>
             {note?.source_capture_id ? <SavedSource captureId={note.source_capture_id} /> : null}
             {note ? <NoteContextPanel userId={userId} note={note} noteDirty={noteDirty} disabled={Boolean(busy)} onDirty={setContextDirty} /> : null}
+            {note ? <NoteRecallControl userId={userId} noteId={note.id} disabled={Boolean(busy)} /> : null}
             {note ? <TextAction title={busy === 'delete' ? 'Deleting…' : 'Delete note'} destructive
               disabled={Boolean(busy)} onPress={() => setConfirmDelete(true)} /> : null}
           </View>

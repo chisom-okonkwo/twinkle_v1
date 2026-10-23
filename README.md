@@ -1,15 +1,15 @@
 # Twinkle V1
 
-Private text, photo, and audio notes with optional context enrichment, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
+Private text, photo, and audio notes with optional context enrichment and intelligent recall, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
 
 ## Connected backend
 
 - Supabase project: **Twinkle V1**, organization **Twinkle**, region **us-east-1**.
 - Project reference: `lvrmixdkkdrtssdtggnw`.
 - [Supabase dashboard](https://supabase.com/dashboard/project/lvrmixdkkdrtssdtggnw).
-- All notes, media, and context migrations are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
+- All notes, media, context, and recall migrations are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
 
-Photo/audio capture uses a private Storage bucket and an authenticated Supabase Edge Function calling OpenAI. See [capture setup and checks](./docs/CAPTURE.md). Optional context enrichment and minimal questions are implemented through FR-09; see [context consent, architecture, Android checks, and limitations](./docs/CONTEXT.md). Both functions are deployed and reuse the server-side OpenAI key. FR-10 and later requirements remain unimplemented.
+Photo/audio capture uses a private Storage bucket and an authenticated Supabase Edge Function calling OpenAI. See [capture setup and checks](./docs/CAPTURE.md). Optional context enrichment and minimal questions are implemented through FR-09; see [context consent, architecture, Android checks, and limitations](./docs/CONTEXT.md). Capture and enrichment functions are deployed and reuse the server-side OpenAI key. FR-10–FR-12 add intelligent flashbacks, opt-in push, and notification preferences; see [recall architecture, Android/EAS setup, tests and limitations](./docs/RECALL.md). The recall functions and protected Cron job are deployed; actual Android push awaits EAS/FCM setup and a development build.
 
 ## Local setup
 
@@ -29,7 +29,7 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
 Get the publishable key from the project's **Connect** dialog or **Settings → API Keys**. Start the application:
 
 ```sh
-npx expo start --clear
+npx expo start --go --clear
 ```
 
 Use a development build that includes the installed native modules and camera/microphone permission configuration; rebuild an older development client after these additions. See the capture guide for device checks. No native directories were created or edited. Fully reload the app after changing environment values. Missing configuration displays setup guidance instead of contacting a dummy backend.
@@ -65,7 +65,7 @@ The two primary screens are **Notes Home** and **Note Editor**. The existing cal
 - Returning to Notes Home or foregrounding the app refreshes the list. Pull to refresh and the Refresh notes action are also available. Notes are retrieved again from Supabase after a new app session.
 - The initial migration `supabase/migrations/20261023045032_create_notes.sql` already supplies the schema, RLS, column privileges, owner index, and timestamp trigger. It is applied to the connected project. **No new SQL or manual Supabase configuration is needed for FR-02–FR-04.** Future metadata/media fields can be added through small migrations without changing the core note record.
 
-To test in Expo, run `npx expo start --clear`, then:
+To test in Expo, run `npx expo start --go --clear`, then:
 
 1. Sign in, tap **+ New note**, enter several lines, and save. Confirm it appears on Notes Home.
 2. Open it, edit the text, and save. Confirm it moves above older notes and its modification date changes.
@@ -135,7 +135,7 @@ Run `supabase/tests/notes_security.sql` as the database owner in the project's S
 
 The public client key was also checked against the live Data API: unauthenticated note reads are denied, and the Auth endpoint reports email sign-in enabled with confirmation required. Registration/email delivery and native device interactions still require the first-run checks above.
 
-`npm audit` currently reports 19 high-severity findings in the Expo/React Native dependency tree. The two underlying advisories concern `braces` 3.0.3 and `node-forge` 1.4.0, both present at the same versions in the original starter lockfile. Supabase packages are not flagged. The suggested forced fixes include incompatible framework downgrades; the existing SDK and React Native versions were preserved. Review compatible upstream fixes before release.
+`npm audit` currently reports four high-severity findings through the existing Expo CLI / `node-forge` dependency chain. Suggested forced fixes include incompatible Expo downgrades; the agreed SDK was preserved. Review compatible upstream fixes before release.
 
 For a different Supabase project, apply all migrations in order, configure the cleanup endpoint as described in the capture guide, deploy the function, and regenerate `database.types.ts` from that project's schema. Use the Supabase CLI's documented migration/link workflow; do not put management credentials into Expo variables.
 

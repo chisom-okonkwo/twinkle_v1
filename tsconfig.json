@@ -6,6 +6,7 @@
   },
   "exclude": [
     "node_modules",
-    "supabase/functions"
+    "supabase/functions",
+    "scripts/recall-dev.ts"
   ]
 }
