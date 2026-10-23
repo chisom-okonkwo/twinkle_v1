@@ -6,7 +6,7 @@ New notes offer **Text**, **Photo**, and **Audio** within the existing editor. P
 
 Already configured on project `lvrmixdkkdrtssdtggnw`:
 
-- Migration `20261023064553_add_media_captures.sql`, after the existing notes migration.
+- Migrations `20261023064553_add_media_captures.sql` and `20261023160250_improve_media_uploads.sql`, after the existing notes migration.
 - Private `note-media` bucket, owner RLS, source-capture metadata, atomic note/source attachment, processing claims, retry limits, and cleanup job.
 - Edge Function `capture`, with `OPENAI_API_KEY` stored under **Edge Functions → Secrets**. No new client environment variables are required.
 
@@ -22,7 +22,7 @@ Server-only optional secrets:
 | `PHOTO_EXTRACTION_INSTRUCTIONS` | Override the text-preserving vision instructions |
 | `AUDIO_TRANSCRIPTION_INSTRUCTIONS` | Override the original-language transcription prompt |
 
-Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the function. The vision request uses Responses with a strict JSON schema, `store: false`, and no summarization. Completed recordings use the file-transcription endpoint; no language or translation is forced. Both models were accepted by the live API. Provider processing is subject to the OpenAI account's data controls; source media is sent there only when the user explicitly requests extraction/transcription.
+Supabase supplies `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to the function. The vision request uses Responses with a strict JSON schema, `store: false`, and no summarization. After checking the uploaded file, the server supplies OpenAI with a private signed image URL valid for three minutes, avoiding large base64 copies in Edge Function memory. Completed recordings use the file-transcription endpoint; no language or translation is forced. Both models were accepted by the live API. Provider processing is subject to the OpenAI account's data controls; source media is sent there only when the user explicitly requests extraction/transcription.
 
 To deploy changes with an authorized Supabase CLI login:
 
@@ -36,11 +36,12 @@ For another project, apply migrations in order using the CLI migration workflow.
 
 ## Ownership, recovery, and limits
 
-- The client can stage only its own capture with a fixed owner/capture/file path. It cannot forge processing results, overwrite source files, or directly delete originals. Private sources use short-lived signed URLs for review.
+- The client can stage only its own capture with a fixed owner/capture/file path. It cannot forge processing results, overwrite source files, or directly delete originals. For review, private signed URLs are downloaded into temporary local files, with file type/size checks and a 20-second download deadline. Temporary preview copies are removed on unmount. Reloading a private source obtains a new URL and resets the image/audio preview.
 - The function validates the authenticated owner, MIME type, file signature, and size before calling OpenAI. It does not log content, transcripts, media, or provider error bodies.
-- Images are normalized to full-resolution JPEG without resizing, at maximum encoding quality. The original device-library asset is untouched. Uploads are limited to **5 MiB**. Large photos must be replaced with a smaller image; there is no silent downscaling.
-- Native audio is mono AAC in M4A at 96 kbps; the optional browser target uses WebM. Recording stops after **5 minutes**, with the same 5 MiB upload limit. Background recording is disabled; leaving the foreground stops recording and retains the completed file when the recorder supplies one.
-- Sources survive processing errors. Retry uses the same capture; completed results are cached, so a repeated processing request does not repeat a successful model call. Server claims allow three attempts per capture and twenty processing attempts per user per hour. Stopping the UI wait can leave an in-flight server request completing; retry may report busy for up to two minutes before recovery.
+- Images are normalized to full-resolution JPEG without resizing, at 92% encoding quality to reduce unnecessary upload size. The original device-library asset is untouched. Photos are limited to **20 MiB**; larger images must be replaced with a smaller image. Empty-file and oversize errors are distinct.
+- Native audio is mono AAC in M4A at 96 kbps; the optional browser target uses WebM. Recording stops after **5 minutes**, with a **5 MiB** recording limit. Background recording is disabled; leaving the foreground stops recording and retains the completed file when the recorder supplies one. Playback waits for the player to load, explicitly restores the playback audio session and speaker route, and offers reload on failure.
+- Sources survive processing errors. Retry refreshes the capture state and checks the Storage object's top-level `size` before uploading, so an upload that succeeded but lost its response is reused. Upload requests have a 45-second deadline and one automatic retry; metadata requests are bounded separately. The UI distinguishes uploading from extraction/transcription. An unstable connection can still fail; the source remains available for another attempt.
+- Completed results are cached; the client reads that cache before invoking AI and recovers it after a lost function response, avoiding another successful model call. Server claims allow three attempts per capture and twenty processing attempts per user per hour. Stopping the UI wait can leave an in-flight server request completing; retry may report busy for up to two minutes before recovery.
 - Unfinished uploaded captures can be resumed from a new editor session for 24 hours. Local previews that have not reached the cloud can be lost on force-close or cache eviction. Draft text is still in memory until saved.
 - Saved originals remain linked to their notes. Note deletion attempts immediate source removal. Explicitly discarded uploads are removed through the function. Hourly cleanup (`17 * * * *`, up to 100 captures per run) removes expired abandoned uploads and orphaned sources after account deletion, retrying earlier cleanup failures. Saved sources are excluded. Processing leases prevent cleanup during active work.
 - Private budget/settings tables deliberately have RLS with no client policies; only the server uses them. Cleanup metadata is deleted only after Storage confirms removal.
@@ -67,9 +68,13 @@ npx --yes deno check supabase/functions/capture/index.ts
 npx expo export --platform android --platform ios
 ```
 
-Local tests cover strict media/result validation, signatures, exact configured models, structured image output, incomplete/error responses, original-language audio request construction, and empty transcription. Database security scripts under `supabase/tests/` roll back their fixtures.
+Local tests cover strict media/result validation, signatures, exact configured models, structured image output, incomplete/error responses, original-language audio request construction, empty transcription, the Storage v2 size response, bounded retries, cancellation/deadlines, and lost-upload/function-response recovery. Database security scripts under `supabase/tests/` roll back their fixtures.
 
 Live checks used two disposable confirmed accounts, synthetic images, and synthetic speech. They verified printed text, a handwriting-style font, blank-image handling, English transcription, digital silence, cached retries, private source persistence in a fresh authenticated client, media-note creation, idempotent save, anonymous/cross-owner denial, immutable originals, invalid-file recovery, source cleanup, and retention of saved originals during cleanup. The web UI was exercised for image selection, preview, extraction, editing, saving, reopening, and reload persistence. These checks do not establish real-handwriting, accent, or noisy-audio accuracy; users must review AI output before saving.
+
+The upload-recovery fix was checked again against the live backend, including an 8,475,253-byte valid JPEG fixture (expanded using JPEG comments), extraction through a short-lived private URL, saving, and a byte-for-byte private download. A saved M4A source passed the same integrity check. Recovery tests explicitly simulate an upload committing before its response is lost, a lost function response after a completed result, repeated network errors, and platforms ignoring cancellation. The Android report showed a stalled upload of about 92 seconds, while requests reaching the processing function succeeded. No real user media or note contents were read during diagnosis.
+
+After these fixes, the user confirmed on Android with Expo Go that recording playback and private-source loading both work. Browser playback was also observed advancing through the saved recording. Physical interruption/noisy-audio tests remain outstanding.
 
 To rerun the billed live capture test, provide an external, private JSON file containing two disposable accounts (`id`, `email`, `password`), and a fixture directory containing `printed.jpg`, `handwriting-font.jpg`, `blank.jpg`, and `speech.m4a`. The two text images must contain the expected text defined in the test, and the recording must include its expected phrases. Run:
 

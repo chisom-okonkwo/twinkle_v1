@@ -80,7 +80,16 @@ Deno.serve(async (request) => {
     validateMedia(capture.kind, capture.mime_type, bytes.length);
     if (bytes.length !== capture.byte_size) throw new Error('The uploaded source is incomplete. Please discard it and select the source again.');
     checkSignature(bytes, capture.mime_type);
+    // Avoid multiple base64/JSON copies of a 20 MiB image in the Edge runtime.
+    // Only the server can mint this short-lived URL after verifying ownership.
+    let imageUrl: string | undefined;
+    if (capture.kind === 'image') {
+      const signed = await admin.storage.from(MEDIA_BUCKET).createSignedUrl(capture.storage_path, 180);
+      if (signed.error || !signed.data?.signedUrl) throw new Error('The private photo could not be prepared. Please retry.');
+      imageUrl = signed.data.signedUrl;
+    }
     const result = await extractMedia(capture.kind, bytes, capture.mime_type, { key,
+      imageUrl,
       visionModel: Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-6-luna', audioModel: Deno.env.get('OPENAI_TRANSCRIPTION_MODEL') ?? 'gpt-transcribe',
       photoInstructions: Deno.env.get('PHOTO_EXTRACTION_INSTRUCTIONS'), audioInstructions: Deno.env.get('AUDIO_TRANSCRIPTION_INSTRUCTIONS'),
     });

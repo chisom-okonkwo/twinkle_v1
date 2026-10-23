@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { checkSignature, MAX_MEDIA_BYTES, validateMedia, validateResult } from '../supabase/functions/_shared/capture-contract.ts';
+import { checkSignature, MAX_MEDIA_BYTES, MAX_AUDIO_BYTES, validateMedia, validateResult } from '../supabase/functions/_shared/capture-contract.ts';
 import { extractMedia } from '../supabase/functions/_shared/openai.ts';
 
 const config = { key: 'test-only', visionModel: 'gpt-6-luna', audioModel: 'gpt-transcribe' };
@@ -10,6 +10,18 @@ test('media validation rejects empty, oversized, mismatched and unsupported file
   assert.throws(() => validateMedia('audio', 'text/html', 20));
   assert.doesNotThrow(() => validateMedia('audio', 'audio/mp4', 20));
   assert.doesNotThrow(() => validateMedia('audio', 'audio/webm', 20));
+  assert.doesNotThrow(() => validateMedia('image', 'image/jpeg', 8 * 1024 * 1024));
+  assert.doesNotThrow(() => validateMedia('image', 'image/jpeg', MAX_MEDIA_BYTES));
+  assert.throws(() => validateMedia('audio', 'audio/mp4', MAX_AUDIO_BYTES + 1), /5 MB/);
+  assert.throws(() => validateMedia('image', 'image/jpeg', MAX_MEDIA_BYTES + 1), /20 MB/);
+});
+test('large photos use a server-minted short-lived private URL without base64 copies', async () => {
+  await extractMedia('image',new Uint8Array(),'image/jpeg',{...config,imageUrl:'https://storage.example.invalid/private-short-lived'},async(url,request)=>{
+    const body=JSON.parse(request.body);
+    assert.equal(body.input[0].content[1].image_url,'https://storage.example.invalid/private-short-lived');
+    assert.equal(body.store,false);
+    return Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify({text:'Visible words',empty:false,warnings:[]})}]}]});
+  });
 });
 test('server checks media signatures rather than trusting MIME or file names', () => {
   assert.doesNotThrow(() => checkSignature(new Uint8Array([255,216,255,0]), 'image/jpeg'));

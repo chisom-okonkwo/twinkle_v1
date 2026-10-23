@@ -1,6 +1,8 @@
 import 'react-native-url-polyfill/auto';
 import { createClient, processLock } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
+import { fetch as expoFetch } from 'expo/fetch';
+import { withDeadline } from './capture-network';
 
 import type { Database } from './database.types';
 import { sessionStorage } from './session-storage';
@@ -16,6 +18,14 @@ export const configurationError = !url || !key || url.includes('YOUR_PROJECT_REF
 
 // No fallback backend or privileged key: missing configuration shows setup guidance.
 export const supabase = configurationError ? null : createClient<Database>(url!, key!, {
+  global: { fetch: (input, init) => {
+    const target = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    if (target.startsWith(`${url}/storage/v1/`)) {
+      const timeout = init?.method === 'POST' && target.includes('/object/') && !target.includes('/sign/') ? 45000 : 15000;
+      return withDeadline((signal) => expoFetch(input, { ...init, signal }), timeout, init?.signal ?? undefined);
+    }
+    return fetch(input, init);
+  } },
   auth: {
     storage: sessionStorage,
     persistSession: true,

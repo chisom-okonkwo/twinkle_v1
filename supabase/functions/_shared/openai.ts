@@ -1,18 +1,22 @@
 import { AUDIO_INSTRUCTIONS, PHOTO_INSTRUCTIONS, type CaptureKind, type CaptureResult, validateResult } from './capture-contract.ts';
 
-export type AIConfig = { key: string; visionModel: string; audioModel: string; photoInstructions?: string; audioInstructions?: string };
+export type AIConfig = { key: string; visionModel: string; audioModel: string; photoInstructions?: string; audioInstructions?: string; imageUrl?: string };
 export async function extractMedia(kind: CaptureKind, bytes: Uint8Array, mime: string, config: AIConfig, fetcher: typeof fetch = fetch): Promise<CaptureResult> {
   const headers: Record<string, string> = { Authorization: `Bearer ${config.key}` };
   let body: BodyInit;
   let endpoint: string;
   if (kind === 'image') {
-    let binary = '';
-    for (let index = 0; index < bytes.length; index += 8192) binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
+    let imageUrl = config.imageUrl;
+    if (!imageUrl) {
+      let binary = '';
+      for (let index = 0; index < bytes.length; index += 8192) binary += String.fromCharCode(...bytes.subarray(index, index + 8192));
+      imageUrl = `data:${mime};base64,${btoa(binary)}`;
+    }
     headers['Content-Type'] = 'application/json';
     endpoint = 'responses';
     body = JSON.stringify({ model: config.visionModel, store: false, max_output_tokens: 16000,
       instructions: config.photoInstructions ?? PHOTO_INSTRUCTIONS,
-      input: [{ role: 'user', content: [{ type: 'input_text', text: 'Extract the visible text for an editable note.' }, { type: 'input_image', image_url: `data:${mime};base64,${btoa(binary)}`, detail: 'high' }] }],
+      input: [{ role: 'user', content: [{ type: 'input_text', text: 'Extract the visible text for an editable note.' }, { type: 'input_image', image_url: imageUrl, detail: 'high' }] }],
       text: { format: { type: 'json_schema', name: 'note_extraction', strict: true, schema: {
         type: 'object', additionalProperties: false, required: ['text', 'warnings', 'empty'], properties: {
           text: { type: 'string' }, warnings: { type: 'array', items: { type: 'string' } }, empty: { type: 'boolean' },

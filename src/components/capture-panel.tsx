@@ -1,26 +1,60 @@
-import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
+import { AudioModule, RecordingPresets, setAudioModeAsync, setIsAudioActiveAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Image, Platform, Text, View } from 'react-native';
-import { type CaptureDraft, type CaptureKind, type CaptureRecord, discardDraft, localAsset, MAX_RECORDING_SECONDS, processCapture, sourceUrl, stageCapture, unfinishedCaptures } from '../lib/captures';
+import { type CaptureAsset, type CaptureDraft, type CaptureKind, type CaptureRecord, discardDraft, downloadSource, localAsset, MAX_RECORDING_SECONDS, processCapture, removeLocalAsset, sourceUrl, stageCapture, unfinishedCaptures } from '../lib/captures';
 import { Confirmation, noteStyles, TextAction } from './note-ui';
 import { Action, errorMessage, Message, styles } from './ui';
 
-export function AudioPreview({ uri }: { uri: string }) {
-  const player = useAudioPlayer(uri);
+export function AudioPreview({ uri, onRetry }: { uri: string; onRetry: () => void }) {
+  const player = useAudioPlayer(uri, { updateInterval: 250 });
   const status = useAudioPlayerStatus(player);
+  const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  useEffect(() => {
+    if (status.isLoaded) return;
+    const timer = setTimeout(() => setError('Audio could not be loaded. Reload the source and try again.'), 15000);
+    return () => clearTimeout(timer);
+  }, [status.isLoaded]);
+  async function togglePlayback() {
+    setError(null); setStarting(true);
+    try {
+      if (status.playing) { player.pause(); return; }
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true, shouldRouteThroughEarpiece: false, interruptionMode: 'doNotMix', shouldPlayInBackground: false });
+      await setIsAudioActiveAsync(true);
+      if (status.didJustFinish || (status.duration > 0 && status.currentTime >= status.duration - 0.1)) await player.seekTo(0);
+      player.play();
+    } catch { setError('Playback could not start. Reload the source and try again.'); }
+    finally { setStarting(false); }
+  }
   return <View style={{ gap: 8 }}>
     <Text style={noteStyles.meta}>{Math.floor(status.currentTime)}s / {Math.floor(status.duration)}s</Text>
-    <Action secondary title={status.playing ? 'Pause recording' : 'Play recording'} onPress={() => {
-      if (status.playing) player.pause();
-      else { if (status.didJustFinish) void player.seekTo(0).then(() => player.play()); else player.play(); }
-    }} />
-    <Message text={status.error ? 'Playback failed. Try re-opening the source.' : null} error />
+    <Action secondary title={!status.isLoaded ? 'Loading audio…' : status.playing ? 'Pause recording' : 'Play recording'} disabled={!status.isLoaded || starting} onPress={() => void togglePlayback()} />
+    <Message text={error ?? (status.error ? 'Playback failed. Reload the source and try again.' : null)} error />
+    {error || status.error ? <TextAction title="Reload audio" onPress={onRetry} /> : null}
   </View>;
 }
 export function SourcePreview({ kind, uri }: { kind: string; uri: string }) {
-  return kind === 'image' ? <Image source={{ uri }} accessibilityLabel="Source photograph" resizeMode="contain" style={{ width: '100%', height: 240, borderRadius: 12 }} /> : <AudioPreview uri={uri} />;
+  const remote = /^https:\/\//.test(uri);
+  const [cached, setCached] = useState<CaptureAsset | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
+  function retryPreview() { setError(null); setCached(null); setRetry((value) => value + 1); }
+  useEffect(() => {
+    if (!remote) return;
+    const controller = new AbortController();
+    let asset: CaptureAsset | null = null;
+    downloadSource(kind, uri, controller.signal).then((value) => {
+      asset = value;
+      if (controller.signal.aborted) removeLocalAsset(value); else setCached(value);
+    }).catch(() => { if (!controller.signal.aborted) setError('The private source could not be downloaded. Check your connection or tap Reload private source.'); });
+    return () => { controller.abort(); if (asset) removeLocalAsset(asset); };
+  }, [kind, uri, remote, retry]);
+  const source = remote ? cached?.uri : uri;
+  if (error) return <><Message text={error} error /><TextAction title="Retry source preview" onPress={retryPreview} /></>;
+  if (!source) return <ActivityIndicator accessibilityLabel="Downloading private source" color="#55458d" />;
+  return kind === 'image' ? <Image key={`${source}-${retry}`} source={{ uri: source }} onError={() => setError('The photo could not be displayed. Reload the source and try again.')} accessibilityLabel="Source photograph" resizeMode="contain" style={{ width: '100%', height: 240, borderRadius: 12 }} /> : <AudioPreview key={`${source}-${retry}`} uri={source} onRetry={retryPreview} />;
 }
 
 export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled = false }: {
@@ -31,6 +65,7 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [phase, setPhase] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [pending, setPending] = useState<CaptureRecord[]>([]);
@@ -71,7 +106,7 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
     setBusy(true); onBusy(true); setError(null);
     try { await action(); }
     catch (cause) { if (active.current) setError(errorMessage(cause)); }
-    finally { operation.current = false; if (active.current) { setBusy(false); onBusy(recordingRef.current); } }
+    finally { operation.current = false; if (active.current) { setBusy(false); setPhase(null); onBusy(recordingRef.current); } }
   }
 
   async function choosePhoto(camera: boolean) {
@@ -83,7 +118,7 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
       // Normalize unsupported HEIC/AVIF and orientation without resizing or rewriting.
       const context = ImageManipulator.manipulate(selected.assets[0].uri);
       const image = await context.renderAsync();
-      const normalized = await image.saveAsync({ format: SaveFormat.JPEG, compress: 1 });
+      const normalized = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.92 });
       const asset = await localAsset(normalized.uri, 'image', 'image/jpeg', true);
       if (active.current) onDraft({ asset, processed: false, warnings: [] });
     });
@@ -125,12 +160,14 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
   function process() {
     if (!draft) return;
     void run(async () => {
+      setPhase(draft.asset.kind === 'image' ? 'Uploading photo…' : 'Uploading recording…');
       onDraft({ ...draft, remoteAttempted: true });
-      const record = await stageCapture(userId, draft);
+      const record = await stageCapture(userId, draft, { onStaged: (record) => { if (active.current) onDraft({ ...draft, record, remoteAttempted: true }); } });
       const staged = { ...draft, record };
       if (active.current) onDraft(staged);
       const controller = new AbortController(); cancel.current = controller;
       setProcessing(true);
+      setPhase(draft.asset.kind === 'image' ? 'Extracting text…' : 'Transcribing recording…');
       let result;
       try { result = await processCapture(record.id, controller.signal); }
       finally { cancel.current = null; if (active.current) setProcessing(false); }
@@ -160,14 +197,14 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
       {pendingError ? <Text style={noteStyles.meta}>Unfinished captures could not be checked. Text notes are still available.</Text> : null}
     </> : <View style={[noteStyles.card, { gap: 12 }]}>
       <Text style={styles.label}>{draft.asset.kind === 'image' ? 'Your photo' : 'Your recording'}</Text>
-      <SourcePreview kind={draft.asset.kind} uri={draft.asset.uri} />
+      <SourcePreview key={draft.asset.id} kind={draft.asset.kind} uri={draft.asset.uri} />
       <Text style={noteStyles.meta}>{draft.processed ? 'Review the generated text below before saving. It may contain mistakes.' : 'Confirm to send this source to OpenAI for text extraction. Nothing is saved as a note until you review it and tap Save.'}</Text>
       {draft.warnings.map((warning, index) => <Message key={index} text={warning} />)}
-      {!draft.processed ? <Action title={busy ? 'Processing…' : draft.asset.kind === 'image' ? 'Extract text' : 'Transcribe recording'} disabled={busy || disabled} onPress={process} /> : null}
+      {!draft.processed ? <Action title={busy ? phase ?? 'Preparing source…' : draft.asset.kind === 'image' ? 'Extract text' : 'Transcribe recording'} disabled={busy || disabled} onPress={process} /> : null}
       {processing ? <TextAction title="Stop waiting" onPress={() => cancel.current?.abort()} /> : null}
       <TextAction title="Discard source" destructive disabled={busy || disabled} onPress={() => setConfirmDiscard(true)} />
     </View>}
-    {busy ? <ActivityIndicator accessibilityLabel="Preparing or processing capture" color="#55458d" /> : null}
+    {busy ? <ActivityIndicator accessibilityLabel={phase ?? 'Preparing capture'} color="#55458d" /> : null}
     <Message text={error} error />
     <Confirmation visible={confirmDiscard} title="Discard this source?" description="The source file will be removed. Any text already in the editor will stay."
       confirmLabel="Discard source" onCancel={() => setConfirmDiscard(false)} onConfirm={() => {

@@ -7,7 +7,7 @@ Private text, photo, and audio notes, built within the existing Expo SDK 58 / Re
 - Supabase project: **Twinkle V1**, organization **Twinkle**, region **us-east-1**.
 - Project reference: `lvrmixdkkdrtssdtggnw`.
 - [Supabase dashboard](https://supabase.com/dashboard/project/lvrmixdkkdrtssdtggnw).
-- Both notes and media-capture migrations are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
+- All notes/media migrations, including the photo-limit and upload-recovery update, are already applied. Local migration filenames match remote history. Do not rerun them in the SQL editor on this project.
 
 Photo/audio capture uses a private Storage bucket and an authenticated Supabase Edge Function calling OpenAI. The function is deployed and its server-side OpenAI key is configured. See [capture setup, Android checks, and limitations](./docs/CAPTURE.md). FR-07 and subsequent requirements are not implemented.
 
@@ -112,7 +112,7 @@ npm test
 npx expo export --platform android --platform ios
 ```
 
-`npm test` runs sixteen local tests covering note validation, owner scoping, pagination, stale writes/deletes, session storage, media validation, and the OpenAI request/response contract. Live integration tests are skipped unless explicitly configured; the capture guide documents their additional fixtures.
+`npm test` runs local tests covering note validation, owner scoping, pagination, stale writes/deletes, session storage, media validation, the OpenAI request/response contract, and upload/processing recovery. Live integration tests are skipped unless explicitly configured; the capture guide documents their additional fixtures.
 
 The live test was run successfully against the connected Supabase project using two disposable, confirmed accounts. It verified real password sign-in, text CRUD, original whitespace/Unicode, automatic timestamps, persistence through a separate authenticated client, 34 notes across two pages without duplicates, stale-operation rejection, sign-out, and raw API attempts to bypass ownership. Test notes and accounts were removed afterwards.
 
@@ -132,7 +132,7 @@ The public client key was also checked against the live Data API: unauthenticate
 
 `npm audit` currently reports 19 high-severity findings in the Expo/React Native dependency tree. The two underlying advisories concern `braces` 3.0.3 and `node-forge` 1.4.0, both present at the same versions in the original starter lockfile. Supabase packages are not flagged. The suggested forced fixes include incompatible framework downgrades; the existing SDK and React Native versions were preserved. Review compatible upstream fixes before release.
 
-For a different Supabase project, apply both migrations in order, configure the cleanup endpoint as described in the capture guide, deploy the function, and regenerate `database.types.ts` from that project's schema. Use the Supabase CLI's documented migration/link workflow; do not put management credentials into Expo variables.
+For a different Supabase project, apply all migrations in order, configure the cleanup endpoint as described in the capture guide, deploy the function, and regenerate `database.types.ts` from that project's schema. Use the Supabase CLI's documented migration/link workflow; do not put management credentials into Expo variables.
 
 ## Documentation checked
 

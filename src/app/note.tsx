@@ -169,8 +169,8 @@ function SavedSource({ captureId }: { captureId: string }) {
   }, [captureId, retry]);
   return <View style={{ gap: 10, marginTop: 16 }}>
     <Text style={noteStyles.meta}>Original {source?.record.kind === 'audio' ? 'recording' : 'source'} · private</Text>
-    {source ? <SourcePreview key={source.uri} kind={source.record.kind} uri={source.uri} /> : null}
+    {source ? <SourcePreview key={`${source.uri}-${retry}`} kind={source.record.kind} uri={source.uri} /> : !error ? <ActivityIndicator accessibilityLabel="Opening private source" color="#55458d" /> : null}
     <Message text={error} error />
-    <TextAction title="Reload private source" onPress={() => setRetry((value) => value + 1)} />
+    <TextAction title="Reload private source" onPress={() => { setSource(null); setError(null); setRetry((value) => value + 1); }} />
   </View>;
 }
