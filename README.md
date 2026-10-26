@@ -147,3 +147,7 @@ For a different Supabase project, apply all migrations in order, configure the c
 - [Expo SecureStore](https://docs.expo.dev/versions/v58.0.0/sdk/securestore/)
 - [Supabase React Native authentication](https://supabase.com/docs/guides/auth/quickstarts/react-native)
 - [Supabase row level security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+
+## Phase 2: sources and related thoughts
+
+FR-14 and FR-15 add optional, user-confirmed source attribution (also searchable) and a small related-thoughts section when reading saved notes. Discovery uses the existing AI opt-in, PostgreSQL candidate retrieval and bounded semantic evaluation. Capture stays unchanged. See [setup, architecture, verification and Android testing](docs/SOURCES-AND-RELATED.md). The Phase 2 Functional Requirements Specification is authoritative for Phase 2, with minimal effort for casual note-takers as the product priority. No FR-16 or later requirement is implemented.

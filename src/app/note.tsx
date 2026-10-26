@@ -1,3 +1,5 @@
+import { NoteSourcePanel } from '../components/note-source-panel';
+import { RelatedNotesPanel } from '../components/related-notes-panel';
 import { NoteRecallControl } from '../components/note-recall-control';
 import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -36,13 +38,17 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   const [draft, setDraft] = useState<CaptureDraft | null>(null);
   const [captureBusy, setCaptureBusy] = useState(false);
   const [contextDirty, setContextDirty] = useState(false);
+  const [sourceDirty, setSourceDirty] = useState(false);
+  const [sourceBusy, setSourceBusy] = useState(false);
+  const [writing, setWriting] = useState(false);
+  const [relatedVersion, setRelatedVersion] = useState(0);
   const active = useRef(true);
   const operation = useRef(false);
   const noteDirty = content !== (note?.content ?? '') || Boolean(draft);
-  const dirty = noteDirty || contextDirty;
+  const dirty = noteDirty || contextDirty || sourceDirty;
 
-  const disablePrevention = usePreventRemove((dirty || Boolean(busy) || captureBusy) && !leaving, ({ repeat }) => {
-    if (!operation.current && !captureBusy) setDiscardAction(() => repeat);
+  const disablePrevention = usePreventRemove((dirty || Boolean(busy) || captureBusy || sourceBusy) && !leaving, ({ repeat }) => {
+    if (!operation.current && !captureBusy && !sourceBusy) setDiscardAction(() => repeat);
   });
 
   useEffect(() => {
@@ -85,7 +91,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   }
 
   async function persist(kind: 'save' | 'delete') {
-    if (operation.current) return;
+    if (operation.current || sourceBusy) return;
     operation.current = true;
     setBusy(kind);
     setError(null);
@@ -95,8 +101,8 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
         if (draft && (!draft.processed || !draft.record)) throw new Error('Process the source and review the text before saving.');
         const saved = await saveNote(userId, content, note ?? undefined, draft?.record ? { id: draft.record.id, kind: draft.asset.kind } : undefined);
         if (draft) removeLocalAsset(draft.asset);
-        // Preserve an independently edited context draft when the main note saves.
-        if (contextDirty && note) { setNote(saved); setDraft(null); return; }
+        // Preserve independently edited context/source drafts when the main note saves.
+        if ((contextDirty || sourceDirty) && note) { setNote(saved); setDraft(null); return; }
       }
       else if (note) await deleteNote(userId, note);
       if (active.current) leave();
@@ -114,10 +120,10 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   return <SafeAreaView style={noteStyles.page}>
     <KeyboardAvoidingView style={noteStyles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={noteStyles.toolbar}>
-        <TextAction title="‹ Notes" onPress={back} disabled={Boolean(busy) || captureBusy} />
+        <TextAction title="‹ Notes" onPress={back} disabled={Boolean(busy) || captureBusy || sourceBusy} />
         <Text style={noteStyles.meta}>{id ? 'Edit note' : 'New note'}</Text>
         <Action title={busy === 'save' ? 'Saving…' : 'Save'} onPress={() => void persist('save')}
-          disabled={loading || Boolean(loadError) || Boolean(busy) || captureBusy || Boolean(draft && !draft.processed) || !noteDirty || !content.trim()} />
+          disabled={loading || Boolean(loadError) || Boolean(busy) || captureBusy || sourceBusy || Boolean(draft && !draft.processed) || !noteDirty || !content.trim()} />
       </View>
       {loading ? <View style={noteStyles.state}><ActivityIndicator accessibilityLabel="Loading note" color="#55458d" /></View>
         : loadError ? <View style={noteStyles.editorBody}>
@@ -131,7 +137,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
           {conflict ? <TextAction title="Reload saved note" onPress={() => setConfirmReload(true)} disabled={Boolean(busy)} /> : null}
           <TextInput accessibilityLabel="Note content" multiline style={noteStyles.editor}
             placeholder="Start with a thought…" placeholderTextColor="#91899f" autoFocus={!id}
-            value={content} onChangeText={setContent} editable={!busy} maxLength={MAX_NOTE_LENGTH} />
+            value={content} onFocus={() => setWriting(true)} onBlur={() => setWriting(false)} onChangeText={setContent} editable={!busy && !sourceBusy} maxLength={MAX_NOTE_LENGTH} />
           <View style={noteStyles.editorMeta}>
             {note ? <>
               <Text style={noteStyles.meta}>Created {formatNoteDate(note.created_at)}</Text>
@@ -139,10 +145,12 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
             </> : <Text style={noteStyles.meta}>Only you can see your notes.</Text>}
             <Text style={noteStyles.meta}>{dirty ? 'Unsaved changes' : note ? 'Saved in your private notes' : 'Save when you’re ready'}</Text>
             {note?.source_capture_id ? <SavedSource captureId={note.source_capture_id} /> : null}
-            {note ? <NoteContextPanel userId={userId} note={note} noteDirty={noteDirty} disabled={Boolean(busy)} onDirty={setContextDirty} /> : null}
-            {note ? <NoteRecallControl userId={userId} noteId={note.id} disabled={Boolean(busy)} /> : null}
+            {note ? <NoteSourcePanel userId={userId} noteId={note.id} content={note.content} disabled={Boolean(busy)} onDirty={setSourceDirty} onBusy={setSourceBusy} onSaved={() => setRelatedVersion(n => n + 1)} /> : null}
+            {note ? <NoteContextPanel userId={userId} note={note} noteDirty={noteDirty} disabled={Boolean(busy) || sourceBusy} onDirty={setContextDirty} onSaved={() => setRelatedVersion(n => n + 1)} /> : null}
+            {id && note && !dirty && !writing && !busy && !sourceBusy ? <RelatedNotesPanel key={relatedVersion} userId={userId} noteId={note.id} /> : null}
+            {note ? <NoteRecallControl userId={userId} noteId={note.id} disabled={Boolean(busy) || sourceBusy} /> : null}
             {note ? <TextAction title={busy === 'delete' ? 'Deleting…' : 'Delete note'} destructive
-              disabled={Boolean(busy)} onPress={() => setConfirmDelete(true)} /> : null}
+              disabled={Boolean(busy) || sourceBusy} onPress={() => setConfirmDelete(true)} /> : null}
           </View>
         </ScrollView>}
     </KeyboardAvoidingView>

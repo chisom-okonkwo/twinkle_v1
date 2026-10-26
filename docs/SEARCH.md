@@ -67,4 +67,4 @@ This is lexical retrieval: it does not infer synonyms, paraphrases or semantic r
 
 Pagination is stable for an unchanged collection; concurrent edits may reorder matches. The client removes duplicate IDs and advances independently, and returning to search refreshes from the first page. Broad searches stop at 1,000 matches and can be narrowed with another word. Search requires a connection. Larger production collections and unusually long notes should be profiled before expanding the limits.
 
-No `PROGRESS.md` exists; this guide records FR-13 completion and remaining verification limits. Existing authentication, capture, context and flashback flows were preserved. Stop here before FR-14.
+No `PROGRESS.md` exists; this guide records FR-13 completion and remaining verification limits. Existing authentication, capture, context and flashback flows were preserved. FR-14/15 source compatibility is documented in [Sources and Related Thoughts](SOURCES-AND-RELATED.md).

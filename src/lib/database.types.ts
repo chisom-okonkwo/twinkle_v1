@@ -227,6 +227,51 @@ export type Database = {
           },
         ]
       }
+      note_relations: {
+        Row: {
+          explanation: string
+          note_id: string
+          origin_quote: string
+          related_id: string
+          related_quote: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          explanation: string
+          note_id: string
+          origin_quote: string
+          related_id: string
+          related_quote: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          explanation?: string
+          note_id?: string
+          origin_quote?: string
+          related_id?: string
+          related_quote?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_relations_note_id_user_id_fkey"
+            columns: ["note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "note_relations_related_id_user_id_fkey"
+            columns: ["related_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       note_search_documents: {
         Row: {
           content_vector: unknown
@@ -262,6 +307,44 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "notes"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_sources: {
+        Row: {
+          description: string
+          name: string
+          note_id: string
+          source_type: string | null
+          url: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          description?: string
+          name?: string
+          note_id: string
+          source_type?: string | null
+          url?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          description?: string
+          name?: string
+          note_id?: string
+          source_type?: string | null
+          url?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_sources_note_id_user_id_fkey"
+            columns: ["note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
           },
         ]
       }
@@ -366,6 +449,47 @@ export type Database = {
         }
         Relationships: []
       }
+      related_note_runs: {
+        Row: {
+          completed_at: string | null
+          library_revision: number
+          model: string | null
+          note_id: string
+          started_at: string
+          status: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          library_revision: number
+          model?: string | null
+          note_id: string
+          started_at?: string
+          status: string
+          token?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          library_revision?: number
+          model?: string | null
+          note_id?: string
+          started_at?: string
+          status?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "related_note_runs_note_id_user_id_fkey"
+            columns: ["note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -428,6 +552,10 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_related_notes: {
+        Args: { caller_id: string; retry?: boolean; target_id: string }
+        Returns: Json
+      }
       fail_note_context: {
         Args: {
           caller_id: string
@@ -450,6 +578,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      finish_related_notes: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          expected_revision: number
+          links: Json
+          model_name: string
+          target_id: string
+        }
+        Returns: boolean
+      }
+      read_related_notes: {
+        Args: { target_id: string }
+        Returns: {
+          created_at: string
+          explanation: string
+          id: string
+          title: string
+        }[]
+      }
       recall_service: {
         Args: { action: string; owner_id?: string; payload?: Json }
         Returns: Json
@@ -457,6 +605,14 @@ export type Database = {
       register_recall_device: {
         Args: { device_platform: string; installation: string; token: string }
         Returns: undefined
+      }
+      related_note_candidates: {
+        Args: { caller_id: string; target_id: string; terms: string[] }
+        Returns: Json
+      }
+      related_note_input: {
+        Args: { caller_id: string; target_id: string }
+        Returns: Json
       }
       respond_flashback: {
         Args: { feedback: string; target_id: string }

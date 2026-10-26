@@ -7,8 +7,8 @@ import { Action, Message, errorMessage, styles } from './ui';
 import { Confirmation, TextAction, noteStyles } from './note-ui';
 
 const labels = { topics: 'Topics', details: 'Details', intentions: 'Intentions', concerns: 'Concerns', open_questions: 'Open questions', emotions: 'Expressed feelings' };
-export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty }: {
-  userId: string; note: Note; noteDirty: boolean; disabled: boolean; onDirty: (dirty: boolean) => void;
+export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty, onSaved }: {
+  userId: string; note: Note; noteDirty: boolean; disabled: boolean; onDirty: (dirty: boolean) => void; onSaved?: () => void;
 }) {
   const [data, setData] = useState<{ row: NoteContext; enabled: boolean; hash: string; version: string; checkedAt: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty }:
     setBusy(true); setError(null); setConfirmRemove(false);
     try {
       const saved = await saveUserContext(userId, previous, values);
-      if (active.current) { setData((old) => old ? { ...old, row: saved } : old); setEditing(false); onDirty(false); }
+      if (active.current) { setData((old) => old ? { ...old, row: saved } : old); setEditing(false); onDirty(false); onSaved?.(); }
     } catch (cause) { if (active.current) setError(errorMessage(cause)); }
     finally { if (active.current) setBusy(false); }
   }

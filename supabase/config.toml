@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.recall-scheduler]
 verify_jwt = false
+
+[functions.related-notes]
+verify_jwt = false
