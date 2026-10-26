@@ -1,3 +1,4 @@
+import { CaptureConnectionsProvider } from '../providers/capture-connections-provider';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Text } from 'react-native';
@@ -23,7 +24,7 @@ function Routes() {
       </Screen>
     );
   return (
-    <>
+    <CaptureConnectionsProvider key={session?.user.id ?? 'signed-out'}>
       {session ? <RecallNotificationBridge key={session.user.id} userId={session.user.id} /> : null}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={!session}>
@@ -33,11 +34,12 @@ function Routes() {
           <Stack.Screen name="index" />
           <Stack.Screen name="note" />
           <Stack.Screen name="search" />
+          <Stack.Screen name="discover" />
           <Stack.Screen name="flashback" />
           <Stack.Screen name="recall-settings" />
         </Stack.Protected>
       </Stack>
-    </>
+    </CaptureConnectionsProvider>
   );
 }
 

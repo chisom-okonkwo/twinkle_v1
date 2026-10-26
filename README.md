@@ -150,4 +150,8 @@ For a different Supabase project, apply all migrations in order, configure the c
 
 ## Phase 2: sources and related thoughts
 
-FR-14 and FR-15 add optional, user-confirmed source attribution (also searchable) and a small related-thoughts section when reading saved notes. Discovery uses the existing AI opt-in, PostgreSQL candidate retrieval and bounded semantic evaluation. Capture stays unchanged. See [setup, architecture, verification and Android testing](docs/SOURCES-AND-RELATED.md). The Phase 2 Functional Requirements Specification is authoritative for Phase 2, with minimal effort for casual note-takers as the product priority. No FR-16 or later requirement is implemented.
+FR-14 and FR-15 add optional, user-confirmed source attribution (also searchable) and a small related-thoughts section when reading saved notes. Discovery uses the existing AI opt-in, PostgreSQL candidate retrieval and bounded semantic evaluation. Capture stays unchanged. See [setup, architecture, verification and Android testing](docs/SOURCES-AND-RELATED.md). The Phase 2 Functional Requirements Specification is authoritative for Phase 2, with minimal effort for casual note-takers as the product priority. FR-16 and FR-17 now build on this foundation; see the discovery guide below.
+
+## Phase 2: capture connections and discovery
+
+FR-16 shows optional related older thoughts after a save, without delaying capture. FR-17 adds **Discover thoughts** with **Surprise me**, **Explore this topic**, persistent feedback and no repeats within a round. Older unseen thoughts come first; newer or recently seen thoughts can fill gaps. Discovery itself uses no AI requests. [Implementation, migrations, verification, limits and Android checks](docs/DISCOVERY.md). No FR-18 or later requirement is implemented.

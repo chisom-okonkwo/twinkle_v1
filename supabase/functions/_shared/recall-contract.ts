@@ -33,7 +33,7 @@ export const isSensitiveRecall = (text: string) =>
     text,
   );
 const empty = () => Object.fromEntries(CONTEXT_FIELDS.map((field) => [field, []]));
-export function rankRecallNotes(notes: RecallCandidate[], now = Date.now()): RankedNote[] {
+export function rankRecallNotes(notes: RecallCandidate[], now = Date.now(), mode: 'flashback' | 'discovery' = 'flashback'): RankedNote[] {
   const ranked: RankedNote[] = [];
   for (const note of notes) {
     const age = (now - Date.parse(note.created_at)) / 86400000,
@@ -41,10 +41,10 @@ export function rankRecallNotes(notes: RecallCandidate[], now = Date.now()): Ran
     if (
       !Number.isFinite(age) ||
       !Number.isFinite(editAge) ||
-      age < 7 ||
-      editAge < 7 ||
-      note.content.trim().length < 60 ||
-      note.content.trim().split(/\s+/).length < 10 ||
+      age < (mode === 'discovery' ? 0 : 7) ||
+      editAge < (mode === 'discovery' ? 0 : 7) ||
+      note.content.trim().length < (mode === 'discovery' ? 40 : 60) ||
+      note.content.trim().split(/\s+/).length < (mode === 'discovery' ? 6 : 10) ||
       isSensitiveRecall([note.content, note.context.user_context, note.context.answer].join(' ')) ||
       /\b(ignore (?:all |prior |previous )?instructions|system:|api key)\b/i.test(note.content)
     )
@@ -75,16 +75,26 @@ export function rankRecallNotes(notes: RecallCandidate[], now = Date.now()): Ran
       (userDetail ? 3 : 0) +
       (age >= 30 ? 1 : 0) +
       (age >= 90 ? 1 : 0);
-    if (!context && !userDetail) continue;
+    const detailedOriginal = note.content.trim().length >= 60 && note.content.trim().split(/\s+/).length >= 10;
+    if (!context && !userDetail && !(mode === 'discovery' && detailedOriginal)) continue;
     if (!explicit('intentions').length && !open && !explicit('concerns').length && !userDetail)
       score = Math.min(score, 4);
-    if (score < 5) continue;
+    if (mode === 'discovery') {
+      if (!meaningfulSituation && !userDetail && !detailedOriginal) continue;
+      if (detailedOriginal && !context && !userDetail) score += 2;
+    }
+    if (score < (mode === 'discovery' ? 2 : 5)) continue;
     const possible = [
       situation,
       ...explicit('open_questions').map((c) => c.quote),
       ...explicit('intentions').map((c) => c.quote),
     ];
-    if (!context && userDetail) possible.push(note.content);
+    if (!context && userDetail && mode === 'flashback') possible.push(note.content);
+    if (!context && mode === 'discovery' && (userDetail || detailedOriginal)) {
+      // Whole original clauses; never synthesize a memory when AI is disabled.
+      const first = normalizeContextInput(note.content).split(/(?<=[.!?]) +/).find(sentence => sentence.length >= 30 && sentence.length <= 400);
+      if (first) possible.push(first);
+    }
     const excerpts = [
       ...new Set(
         possible.filter((quote): quote is string => !!quote && quote.length >= 30 && quote.length <= 400),
@@ -110,7 +120,7 @@ export function rankRecallNotes(notes: RecallCandidate[], now = Date.now()): Ran
           ? 'An intention you recorded'
           : userDetail
             ? 'Context you chose to preserve'
-            : 'A concern you recorded',
+            : mode === 'discovery' ? 'A thought you kept' : 'A concern you recorded',
       excerpts,
       open,
     });

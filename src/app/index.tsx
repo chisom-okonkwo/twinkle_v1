@@ -1,3 +1,5 @@
+import { useCaptureConnections } from '../providers/capture-connections-provider';
+import { RelatedNotesPanel } from '../components/related-notes-panel';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, FlatList, Text, View } from 'react-native';
@@ -18,6 +20,7 @@ export default function NotesRoute() {
 }
 
 function NotesHome({ userId }: { userId: string }) {
+  const { saved } = useCaptureConnections();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
@@ -96,6 +99,8 @@ function NotesHome({ userId }: { userId: string }) {
           <Text style={styles.subtitle}>Thoughts, ideas, and things to keep close.</Text>
           <Action title="+ New note" onPress={() => router.navigate('/note')} disabled={signingOut} />
           <Action title="Search notes" secondary onPress={() => router.navigate('/search')} disabled={signingOut} />
+          <Action title="Discover thoughts" secondary onPress={() => router.navigate('/discover')} disabled={signingOut} />
+          {saved?.userId === userId ? <RelatedNotesPanel key={`${saved.id}:${saved.updatedAt}`} userId={userId} noteId={saved.id} capture /> : null}
           <ContextPreferences userId={userId} />
           <FlashbackCard userId={userId} />
           {error ? <View style={noteStyles.banner}>

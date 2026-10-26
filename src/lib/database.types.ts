@@ -227,6 +227,47 @@ export type Database = {
           },
         ]
       }
+      note_discovery_history: {
+        Row: {
+          dismissed: boolean
+          mode: string
+          note_id: string
+          note_updated_at: string
+          request_id: string
+          session_id: string
+          shown_at: string
+          user_id: string
+        }
+        Insert: {
+          dismissed?: boolean
+          mode: string
+          note_id: string
+          note_updated_at: string
+          request_id: string
+          session_id: string
+          shown_at?: string
+          user_id: string
+        }
+        Update: {
+          dismissed?: boolean
+          mode?: string
+          note_id?: string
+          note_updated_at?: string
+          request_id?: string
+          session_id?: string
+          shown_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_discovery_history_note_id_user_id_fkey"
+            columns: ["note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       note_relations: {
         Row: {
           explanation: string
@@ -449,6 +490,42 @@ export type Database = {
         }
         Relationships: []
       }
+      related_note_dismissals: {
+        Row: {
+          dismissed_at: string
+          note_a: string
+          note_b: string
+          user_id: string
+        }
+        Insert: {
+          dismissed_at?: string
+          note_a: string
+          note_b: string
+          user_id: string
+        }
+        Update: {
+          dismissed_at?: string
+          note_a?: string
+          note_b?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "related_note_dismissals_note_a_user_id_fkey"
+            columns: ["note_a", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "related_note_dismissals_note_b_user_id_fkey"
+            columns: ["note_b", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       related_note_runs: {
         Row: {
           completed_at: string | null
@@ -556,6 +633,22 @@ export type Database = {
         Args: { caller_id: string; retry?: boolean; target_id: string }
         Returns: Json
       }
+      discovery_candidates: {
+        Args: {
+          caller_id: string
+          discovery_session: string
+          page_offset?: number
+        }
+        Returns: Json
+      }
+      discovery_card: {
+        Args: { caller_id: string; discovery_request: string }
+        Returns: Json
+      }
+      dismiss_note_connection: {
+        Args: { origin_id: string; target_id: string }
+        Returns: undefined
+      }
       fail_note_context: {
         Args: {
           caller_id: string
@@ -598,9 +691,26 @@ export type Database = {
           title: string
         }[]
       }
+      read_resurfaced_notes: {
+        Args: { target_id: string }
+        Returns: {
+          created_at: string
+          explanation: string
+          id: string
+          title: string
+        }[]
+      }
       recall_service: {
         Args: { action: string; owner_id?: string; payload?: Json }
         Returns: Json
+      }
+      record_capture_rediscovery: {
+        Args: { caller_id: string; origin_id: string; target_ids: string[] }
+        Returns: undefined
+      }
+      rediscovery_eligible: {
+        Args: { owner_id: string; target_id: string }
+        Returns: boolean
       }
       register_recall_device: {
         Args: { device_platform: string; installation: string; token: string }
@@ -612,6 +722,16 @@ export type Database = {
       }
       related_note_input: {
         Args: { caller_id: string; target_id: string }
+        Returns: Json
+      }
+      reserve_discovery: {
+        Args: {
+          caller_id: string
+          candidates: Json
+          discovery_mode: string
+          discovery_request: string
+          discovery_session: string
+        }
         Returns: Json
       }
       respond_flashback: {

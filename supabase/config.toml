@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.related-notes]
 verify_jwt = false
+
+[functions.discover-notes]
+verify_jwt = false

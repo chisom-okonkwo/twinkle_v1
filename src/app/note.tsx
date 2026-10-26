@@ -1,3 +1,4 @@
+import { useCaptureConnections } from '../providers/capture-connections-provider';
 import { NoteSourcePanel } from '../components/note-source-panel';
 import { RelatedNotesPanel } from '../components/related-notes-panel';
 import { NoteRecallControl } from '../components/note-recall-control';
@@ -22,6 +23,7 @@ export default function NoteRoute() {
 }
 
 function NoteEditor({ userId, id }: { userId: string; id?: string }) {
+  const { noteSaved } = useCaptureConnections();
   const validId = !id || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   const [note, setNote] = useState<Note | null>(null);
   const [content, setContent] = useState('');
@@ -101,6 +103,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
         if (draft && (!draft.processed || !draft.record)) throw new Error('Process the source and review the text before saving.');
         const saved = await saveNote(userId, content, note ?? undefined, draft?.record ? { id: draft.record.id, kind: draft.asset.kind } : undefined);
         if (draft) removeLocalAsset(draft.asset);
+        noteSaved(saved);
         // Preserve independently edited context/source drafts when the main note saves.
         if ((contextDirty || sourceDirty) && note) { setNote(saved); setDraft(null); return; }
       }

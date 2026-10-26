@@ -1,6 +1,6 @@
 # FR-14 and FR-15 — Sources and Related Thoughts
 
-Implemented October 25, 2026 (client time). Primary functional reference: **Twinkle — Phase 2 Functional Requirements Specification.md**, FR-14/15. The V1 technical reference, existing Expo Router architecture and calm, optional UI are preserved. No FR-16 or later feature is included. No `PROGRESS.md` exists; this document records completion and remaining verification limits.
+Implemented October 25, 2026 (client time). Primary functional reference: **Twinkle — Phase 2 Functional Requirements Specification.md**, FR-14/15. The V1 technical reference, existing Expo Router architecture and calm, optional UI are preserved. This guide covers the FR-14/15 foundation. The subsequent [FR-16/17 discovery implementation](DISCOVERY.md) reuses it. No `PROGRESS.md` exists; this document records completion and remaining verification limits.
 
 ## Source attribution
 
@@ -91,7 +91,7 @@ Fixtures and rubrics are in `tests/fixtures/related-evaluation.json`. The new ro
 7. Try an unavailable network: source/discovery failures should offer a retry without destroying your draft or blocking ordinary note reading. Save a source draft and main-note edit in both orders; unsaved changes should remain protected.
 8. Disable AI context. Confirm new related analyses stop while note capture, source editing and ordinary search remain usable. Sign in as another user and verify private attribution/connections are inaccessible.
 
-No FR-16 capture resurfacing, embeddings, themes, clustering, import, knowledge graph, analytics or new notification behavior is included.
+The FR-14/15 phase did not add capture resurfacing. The later [FR-16/17 implementation](DISCOVERY.md) reuses this detector; embeddings, themes, clustering, import, knowledge graphs, analytics and new notification types remain out of scope.
 
 ## Official documentation checked
 
