@@ -227,6 +227,44 @@ export type Database = {
           },
         ]
       }
+      note_search_documents: {
+        Row: {
+          content_vector: unknown
+          context_text: string
+          document: unknown
+          literal_document: unknown
+          note_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content_vector: unknown
+          context_text: string
+          document: unknown
+          literal_document: unknown
+          note_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          content_vector?: unknown
+          context_text?: string
+          document?: unknown
+          literal_document?: unknown
+          note_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_search_documents_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: true
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           capture_method: string
@@ -423,6 +461,19 @@ export type Database = {
       respond_flashback: {
         Args: { feedback: string; target_id: string }
         Returns: undefined
+      }
+      search_notes: {
+        Args: { page_limit?: number; page_offset?: number; search_text: string }
+        Returns: {
+          capture_method: string
+          created_at: string
+          id: string
+          matched_context: boolean
+          preview: string
+          rank: number
+          title: string
+          updated_at: string
+        }[]
       }
       unregister_recall_device: {
         Args: { installation: string }

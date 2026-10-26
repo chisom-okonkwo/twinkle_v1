@@ -1,5 +1,9 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## Product references and Phase 2 direction
+
+For Phase 2, read `Twinkle — Phase 2 Functional Requirements Specification.md` alongside `Twinkle V1 — Product & Technical Reference.md`. Implement only the requirement explicitly assigned by the user. Twinkle serves casual note-takers: keep capture effortless, intelligence unobtrusive, and the interface minimal. Avoid mandatory organization, elaborate workflows, and unnecessary configuration. A roadmap requirement is not permission to implement it.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:

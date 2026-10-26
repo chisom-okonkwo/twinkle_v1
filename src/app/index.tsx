@@ -95,6 +95,7 @@ function NotesHome({ userId }: { userId: string }) {
           <Text accessibilityRole="header" style={styles.title}>Your notes</Text>
           <Text style={styles.subtitle}>Thoughts, ideas, and things to keep close.</Text>
           <Action title="+ New note" onPress={() => router.navigate('/note')} disabled={signingOut} />
+          <Action title="Search notes" secondary onPress={() => router.navigate('/search')} disabled={signingOut} />
           <ContextPreferences userId={userId} />
           <FlashbackCard userId={userId} />
           {error ? <View style={noteStyles.banner}>

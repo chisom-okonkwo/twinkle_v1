@@ -32,6 +32,7 @@ function Routes() {
         <Stack.Protected guard={Boolean(session)}>
           <Stack.Screen name="index" />
           <Stack.Screen name="note" />
+          <Stack.Screen name="search" />
           <Stack.Screen name="flashback" />
           <Stack.Screen name="recall-settings" />
         </Stack.Protected>
