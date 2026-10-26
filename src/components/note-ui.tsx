@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { importProvenance } from '../lib/import-provenance';
 import type { Note } from '../lib/notes';
 import { Action, styles } from './ui';
 
@@ -32,14 +33,15 @@ export function Confirmation({ visible, title, description, confirmLabel, cancel
 
 export const NoteCard = memo(function NoteCard({ note, onOpen }: { note: Note; onOpen: (id: string) => void }) {
   const lines = note.content.trim().split(/\r?\n/);
-  const title = lines[0].slice(0, 160) + (lines[0].length > 160 ? '…' : '');
-  const preview = lines.slice(1).join('\n').trim().slice(0, 500);
+  const imported = importProvenance(note.import_metadata);
+  const title = imported?.title || lines[0].slice(0, 160) + (lines[0].length > 160 ? '…' : '');
+  const preview = (imported ? lines : lines.slice(1)).join('\n').trim().slice(0, 500);
   return <Pressable onPress={() => onOpen(note.id)} accessibilityRole="button"
     accessibilityLabel={`Open note: ${title.slice(0, 100)}`}
     style={({ pressed }) => [noteStyles.card, pressed && noteStyles.cardPressed]}>
     <Text style={noteStyles.noteTitle} numberOfLines={2}>{title}</Text>
     {preview ? <Text style={noteStyles.preview} numberOfLines={3}>{preview}</Text> : null}
-    <Text style={noteStyles.meta}>{note.capture_method === 'image' ? 'Photo · ' : note.capture_method === 'audio' ? 'Audio · ' : ''}Edited {formatNoteDate(note.updated_at)}</Text>
+    <Text style={noteStyles.meta}>{imported ? 'Imported · ' : note.capture_method === 'image' ? 'Photo · ' : note.capture_method === 'audio' ? 'Audio · ' : ''}Edited {formatNoteDate(note.updated_at)}</Text>
   </Pressable>;
 });
 

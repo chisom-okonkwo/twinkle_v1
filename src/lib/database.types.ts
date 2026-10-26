@@ -395,6 +395,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          import_metadata: Json | null
           source_capture_id: string | null
           updated_at: string
           user_id: string
@@ -404,6 +405,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          import_metadata?: Json | null
           source_capture_id?: string | null
           updated_at?: string
           user_id?: string
@@ -413,6 +415,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          import_metadata?: Json | null
           source_capture_id?: string | null
           updated_at?: string
           user_id?: string
@@ -681,6 +684,10 @@ export type Database = {
           target_id: string
         }
         Returns: boolean
+      }
+      import_text_note: {
+        Args: { body: string; file_name: string; metadata?: Json }
+        Returns: Json
       }
       read_related_notes: {
         Args: { target_id: string }

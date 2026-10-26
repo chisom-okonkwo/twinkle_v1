@@ -99,6 +99,7 @@ function NotesHome({ userId }: { userId: string }) {
           <Text style={styles.subtitle}>Thoughts, ideas, and things to keep close.</Text>
           <Action title="+ New note" onPress={() => router.navigate('/note')} disabled={signingOut} />
           <Action title="Search notes" secondary onPress={() => router.navigate('/search')} disabled={signingOut} />
+          <TextAction title="Import notes" onPress={() => router.navigate('/import')} disabled={signingOut} />
           <Action title="Discover thoughts" secondary onPress={() => router.navigate('/discover')} disabled={signingOut} />
           {saved?.userId === userId ? <RelatedNotesPanel key={`${saved.id}:${saved.updatedAt}`} userId={userId} noteId={saved.id} capture /> : null}
           <ContextPreferences userId={userId} />

@@ -154,4 +154,8 @@ FR-14 and FR-15 add optional, user-confirmed source attribution (also searchable
 
 ## Phase 2: capture connections and discovery
 
-FR-16 shows optional related older thoughts after a save, without delaying capture. FR-17 adds **Discover thoughts** with **Surprise me**, **Explore this topic**, persistent feedback and no repeats within a round. Older unseen thoughts come first; newer or recently seen thoughts can fill gaps. Discovery itself uses no AI requests. [Implementation, migrations, verification, limits and Android checks](docs/DISCOVERY.md). No FR-18 or later requirement is implemented.
+FR-16 shows optional related older thoughts after a save, without delaying capture. FR-17 adds **Discover thoughts** with **Surprise me**, **Explore this topic**, persistent feedback and no repeats within a round. Older unseen thoughts come first; newer or recently seen thoughts can fill gaps. Discovery itself uses no AI requests. [Implementation, migrations, verification, limits and Android checks](docs/DISCOVERY.md). FR-18 now extends this foundation; see the import guide below.
+
+## Phase 2: historical note import
+
+FR-18 adds **Import notes** for UTF-8 text and Markdown files, with review, bounded batch processing, exact duplicate detection, safe retry, and preserved provenance. Imported notes use the existing collection and search; AI analysis remains on demand and flashbacks retain their settling period. See [setup, migrations, limits and Android testing](docs/IMPORT.md). FR-19 and later remain out of scope.

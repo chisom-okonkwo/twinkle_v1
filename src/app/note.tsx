@@ -1,3 +1,4 @@
+import { importProvenance } from '../lib/import-provenance';
 import { useCaptureConnections } from '../providers/capture-connections-provider';
 import { NoteSourcePanel } from '../components/note-source-panel';
 import { RelatedNotesPanel } from '../components/related-notes-panel';
@@ -48,6 +49,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   const operation = useRef(false);
   const noteDirty = content !== (note?.content ?? '') || Boolean(draft);
   const dirty = noteDirty || contextDirty || sourceDirty;
+  const imported = importProvenance(note?.import_metadata);
 
   const disablePrevention = usePreventRemove((dirty || Boolean(busy) || captureBusy || sourceBusy) && !leaving, ({ repeat }) => {
     if (!operation.current && !captureBusy && !sourceBusy) setDiscardAction(() => repeat);
@@ -143,7 +145,10 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
             value={content} onFocus={() => setWriting(true)} onBlur={() => setWriting(false)} onChangeText={setContent} editable={!busy && !sourceBusy} maxLength={MAX_NOTE_LENGTH} />
           <View style={noteStyles.editorMeta}>
             {note ? <>
-              <Text style={noteStyles.meta}>Created {formatNoteDate(note.created_at)}</Text>
+              {imported ? <>
+                <Text style={noteStyles.meta}>Imported from {imported.filename} · {formatNoteDate(imported.importedAt)}</Text>
+                <Text style={noteStyles.meta}>{imported.originalDate ? `Creation date supplied by file: ${imported.originalDate}` : 'Original creation date unavailable; using the import date.'}</Text>
+              </> : <Text style={noteStyles.meta}>Created {formatNoteDate(note.created_at)}</Text>}
               <Text style={noteStyles.meta}>Edited {formatNoteDate(note.updated_at)}</Text>
             </> : <Text style={noteStyles.meta}>Only you can see your notes.</Text>}
             <Text style={noteStyles.meta}>{dirty ? 'Unsaved changes' : note ? 'Saved in your private notes' : 'Save when you’re ready'}</Text>
