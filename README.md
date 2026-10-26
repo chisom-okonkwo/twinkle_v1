@@ -158,7 +158,7 @@ FR-16 shows optional related older thoughts after a save, without delaying captu
 
 ## Phase 2: historical note import
 
-FR-18 adds **Import notes** for UTF-8 text and Markdown files, with review, bounded batch processing, exact duplicate detection, safe retry, and preserved provenance. Imported notes use the existing collection and search; AI analysis remains on demand and flashbacks retain their settling period. See [setup, migrations, limits and Android testing](docs/IMPORT.md). FR-19 and later remain out of scope.
+FR-18 adds **Import notes** for UTF-8 text, Markdown, and selected Google Keep JSON/HTML files (JSON preferred for paired formats), with review, bounded batch processing, exact duplicate detection, safe retry, and preserved provenance. Imported notes use the existing collection and search; AI analysis remains on demand and flashbacks retain their settling period. See [setup, migrations, limits and Android testing](docs/IMPORT.md). FR-19 and later remain out of scope.
 
 ## Media inside notes
 

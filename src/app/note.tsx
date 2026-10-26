@@ -214,6 +214,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
               {imported ? <>
                 <Text style={noteStyles.meta}>Imported from {imported.filename} · {formatNoteDate(imported.importedAt)}</Text>
                 <Text style={noteStyles.meta}>{imported.originalDate ? `Creation date supplied by file: ${imported.originalDate}` : 'Original creation date unavailable; using the import date.'}</Text>
+                {imported.originalUpdatedAt ? <Text style={noteStyles.meta}>Last edited in Keep: {imported.originalUpdatedAt}</Text> : null}
               </> : <Text style={noteStyles.meta}>Created {formatNoteDate(note.created_at)}</Text>}
               <Text style={noteStyles.meta}>Edited {formatNoteDate(note.updated_at)}</Text>
             </> : <Text style={noteStyles.meta}>Only you can see your notes.</Text>}

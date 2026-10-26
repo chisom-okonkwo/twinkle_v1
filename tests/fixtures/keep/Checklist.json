@@ -1,0 +1,10 @@
+{
+  "color": "DEFAULT", "isTrashed": false, "isPinned": false, "isArchived": false,
+  "title": "Weekend list",
+  "listContent": [
+    {"textHtml": "Draft &amp; review", "text": "Draft & review", "isChecked": false},
+    {"textHtml": "Send the proposal", "text": "Send the proposal", "isChecked": true},
+    {"textHtml": "Read the chapter", "text": "Read the chapter", "isChecked": false}
+  ],
+  "userEditedTimestampUsec": 1577966400654000, "createdTimestampUsec": 1577880000123456
+}

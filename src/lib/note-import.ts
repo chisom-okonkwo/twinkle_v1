@@ -8,7 +8,7 @@ import { getSupabase } from './supabase';
 import { withDeadline } from './capture-network';
 
 export async function readImportAsset(asset: DocumentPickerAsset) {
-  if (!/\.(txt|md)$/i.test(asset.name)) throw new Error('Choose a .txt or .md file.');
+  if (!/\.(txt|md|json|html)$/i.test(asset.name)) throw new Error('Choose .txt, .md, or Google Keep .json or .html files.');
   if (asset.size !== undefined && asset.size > MAX_IMPORT_BYTES) throw new Error('This file is larger than 256 KB.');
   let bytes: Uint8Array;
   if (Platform.OS === 'web') {

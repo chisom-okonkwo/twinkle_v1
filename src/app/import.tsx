@@ -5,7 +5,7 @@ import { ActivityIndicator, Platform, Text, View } from 'react-native';
 import { Action, errorMessage, Message, Screen, styles } from '../components/ui';
 import { TextAction } from '../components/note-ui';
 import { useAuth } from '../providers/auth-provider';
-import { MAX_BATCH_BYTES, MAX_IMPORT_FILES, runImport, type ImportItem } from '../lib/import-contract';
+import { reviewImportFiles, runImport, type ImportItem } from '../lib/import-contract';
 import { importNote, readImportAsset, releaseImportAsset } from '../lib/note-import';
 
 export default function ImportRoute() {
@@ -40,22 +40,11 @@ function ImportNotes() {
       if (selection.canceled || !active.current) {
         selection.assets?.forEach(releaseImportAsset); return;
       }
-      const next: ImportItem[] = [];
-      let bytes = 0;
+      let next: ImportItem[];
       try {
-        if (selection.assets.length > MAX_IMPORT_FILES) throw new Error('Choose up to 20 files at a time. Nothing has been imported.');
-        for (const asset of selection.assets) {
-          if (!active.current) break;
-          try {
-            const draft = await readImportAsset(asset);
-            if (bytes + draft.size > MAX_BATCH_BYTES) throw new Error('This batch has reached 2 MB. Import this file in another batch.');
-            bytes += draft.size;
-            next.push({ filename: asset.name, draft, status: 'ready' });
-          } catch (cause) { next.push({ filename: asset.name, status: 'failed', message: errorMessage(cause) }); }
-          if (active.current) { setItems([...next]); setDone(next.length); }
-          // Yield between files so progress and navigation remain responsive.
-          await new Promise(resolve => setTimeout(resolve, 0));
-        }
+        next = await reviewImportFiles(selection.assets, readImportAsset, (state, count) => {
+          if (active.current) { setItems(state); setDone(count); }
+        }, () => !active.current);
       } finally { selection.assets.forEach(releaseImportAsset); }
       if (active.current) { setItems(next); setReviewed(false); }
     } catch (cause) {
@@ -81,8 +70,9 @@ function ImportNotes() {
   return <Screen>
     <TextAction title="Back to notes" onPress={() => router.back()} disabled={Boolean(busy)} />
     <Text accessibilityRole="header" style={styles.title}>Bring your thoughts along</Text>
-    <Text style={styles.subtitle}>Choose text (.txt) or Markdown (.md) files. Each file becomes one private note, with its original words and formatting.</Text>
+    <Text style={styles.subtitle}>Choose text (.txt), Markdown (.md), or Google Keep (.json or .html) files. When both Keep formats are selected, JSON is used once.</Text>
     <Text style={styles.subtitle}>Up to 20 files, 256 KB per file and 2 MB per batch. Context analysis is available when you open a note; importing won’t start AI processing.</Text>
+    <Text style={styles.message}>Keep text and checklists are supported. Attachments are not imported; affected notes are flagged below.</Text>
     {!busy ? <Action title={items.length ? 'Choose different files' : 'Choose files'} onPress={choose} secondary={items.length > 0} /> : <>
       <ActivityIndicator accessibilityLabel={busy === 'reading' ? 'Reading selected files' : 'Importing notes'} />
       <Text accessibilityLiveRegion="polite" style={styles.label}>{busy === 'reading' ? `Reading files… ${done} reviewed` : `Importing ${done} of ${items.length}…`}</Text>
@@ -90,17 +80,18 @@ function ImportNotes() {
     <Message text={error} error />
     {items.length && !busy ? <Text style={styles.label}>{reviewed
       ? `${items.filter(i => i.status === 'imported').length} imported · ${items.filter(i => i.status === 'skipped').length} skipped · ${items.filter(i => i.status === 'failed').length} failed`
-      : `${ready} ready · ${items.length - ready} could not be read`}</Text> : null}
+      : `${ready} ready · ${items.filter(i => i.status === 'skipped').length} paired files skipped · ${items.filter(i => i.status === 'failed').length} could not be read`}</Text> : null}
     {items.map((item, index) => <View key={index} style={styles.card}>
-      <Text style={styles.label}>{item.draft?.metadata.title || item.filename.replace(/\.(txt|md)$/i, '')}</Text>
+      <Text style={styles.label}>{item.draft?.metadata.title || item.filename.replace(/\.(txt|md|json|html)$/i, '')}</Text>
       <Text style={styles.subtitle}>{item.filename}</Text>
       {!reviewed && item.draft ? <>
         <Text numberOfLines={5} style={styles.subtitle}>{item.draft.content.slice(0, 700)}</Text>
         <Text style={styles.message}>{item.draft.metadata.created_at ? `Creation date supplied by file: ${item.draft.metadata.created_at}` : 'Original creation date unavailable; the import date will be used.'}</Text>
+        {item.draft.metadata.original_updated_at ? <Text style={styles.message}>Last edited in Keep: {item.draft.metadata.original_updated_at}</Text> : null}
         {item.draft.metadata.source_type ? <Text style={styles.message}>Source to keep: {item.draft.metadata.source_name || item.draft.metadata.source_url} ({item.draft.metadata.source_type}){item.draft.metadata.source_context ? ` · ${item.draft.metadata.source_context}` : ''}</Text> : null}
         {item.draft.metadata.source_name && item.draft.metadata.source_url ? <Text style={styles.message}>{item.draft.metadata.source_url}</Text> : null}
-        {item.draft.warnings.map((warning, i) => <Message key={i} text={warning} />)}
       </> : null}
+      {item.draft?.warnings.map((warning, i) => <Message key={i} text={warning} />)}
       <Message text={item.message ?? null} error={item.status === 'failed'} />
       {item.id && !busy ? <TextAction title="Open note" onPress={() => router.push({ pathname: '/note', params: { id: item.id } })} /> : null}
     </View>)}

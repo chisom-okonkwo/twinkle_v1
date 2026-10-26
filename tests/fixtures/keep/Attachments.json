@@ -1,0 +1,6 @@
+{
+  "attachments": [{"filePath":"sample-photo.jpg","mimetype":"image/jpeg"},{"filePath":"sample-recording.3gp","mimetype":"audio/3gpp"}],
+  "color":"DEFAULT", "isTrashed":false, "isPinned":false, "isArchived":false,
+  "textContent":"The words beside a photo and recording.", "title":"A captured moment",
+  "createdTimestampUsec":1577880000123456, "userEditedTimestampUsec":1577966400654000
+}
