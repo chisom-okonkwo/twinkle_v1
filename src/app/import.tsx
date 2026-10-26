@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
+import { requireOptionalNativeModule } from 'expo';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
 import { Action, errorMessage, Message, Screen, styles } from '../components/ui';
 import { TextAction } from '../components/note-ui';
 import { useAuth } from '../providers/auth-provider';
@@ -30,6 +31,9 @@ function ImportNotes() {
     if (locked.current) return;
     locked.current = true; setError(null); setBusy('reading');
     try {
+      if (Platform.OS !== 'web' && !requireOptionalNativeModule('ExpoDocumentPicker')) {
+        throw new Error('The file chooser needs the latest Twinkle development build. Install the updated app, reconnect, then try again.');
+      }
       // Load only when needed so older development builds can still open notes.
       const picker = await import('expo-document-picker');
       const selection = await picker.getDocumentAsync({ multiple: true, type: '*/*', copyToCacheDirectory: true, base64: false });
