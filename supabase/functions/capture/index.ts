@@ -56,11 +56,25 @@ Deno.serve(async (request) => {
     const raw = chunks.map((chunk) => new TextDecoder().decode(chunk)).join('');
     if (raw.length > 1024) return reply({ error: 'Request too large.' }, 413);
     const input = JSON.parse(raw);
-    if (!['process', 'discard'].includes(input.action) || typeof input.captureId !== 'string' || !/^[0-9a-f-]{36}$/i.test(input.captureId)) return reply({ error: 'Invalid capture request.' }, 400);
+    if (!['process', 'discard', 'prepare'].includes(input.action) || typeof input.captureId !== 'string' || !/^[0-9a-f-]{36}$/i.test(input.captureId)) return reply({ error: 'Invalid capture request.' }, 400);
     captureId = input.captureId;
     const found = await admin.from('note_captures').select('*').eq('id', captureId).eq('user_id', user.id).maybeSingle();
     if (found.error || !found.data) return reply({ error: 'Capture not found.' }, 404);
     if (input.action === 'discard') { await discard(captureId!, user.id); return reply({ discarded: true }); }
+    if (input.action === 'prepare') {
+      const capture = found.data;
+      if (capture.status === 'deleting' || capture.status === 'processing' || capture.status !== 'saved' && Date.parse(capture.expires_at) < Date.now()) return reply({ error: 'This source is processing or unavailable. Please retry shortly.' }, 409);
+      if (capture.verified_at) return reply({ prepared: true });
+      const file = await admin.storage.from(MEDIA_BUCKET).download(capture.storage_path);
+      if (file.error || !file.data) throw new Error('The source could not be loaded. Retry the upload.');
+      const bytes = new Uint8Array(await file.data.arrayBuffer());
+      validateMedia(capture.kind, capture.mime_type, bytes.length);
+      if (bytes.length !== capture.byte_size) throw new Error('The uploaded source is incomplete. Please choose it again.');
+      checkSignature(bytes, capture.mime_type);
+      const verified = await admin.from('note_captures').update({ verified_at: new Date().toISOString() }).eq('id', captureId).eq('user_id', user.id).in('status', ['pending', 'failed', 'ready', 'saved']).select('id').maybeSingle();
+      if (verified.error || !verified.data) throw new Error('The source changed while preparing it. Please retry.');
+      return reply({ prepared: true });
+    }
     if (found.data.result && found.data.status === 'ready') return reply(validateResult(found.data.result));
     const key = Deno.env.get('OPENAI_API_KEY');
     if (!key) return reply({ error: 'AI processing is not configured yet. Your source is safe; please retry after server setup.' }, 503);
@@ -93,7 +107,7 @@ Deno.serve(async (request) => {
       visionModel: Deno.env.get('OPENAI_VISION_MODEL') ?? 'gpt-6-luna', audioModel: Deno.env.get('OPENAI_TRANSCRIPTION_MODEL') ?? 'gpt-transcribe',
       photoInstructions: Deno.env.get('PHOTO_EXTRACTION_INSTRUCTIONS'), audioInstructions: Deno.env.get('AUDIO_TRANSCRIPTION_INSTRUCTIONS'),
     });
-    const saved = await admin.from('note_captures').update({ status: 'ready', result }).eq('id', captureId).eq('status', 'processing').eq('attempts', claimAttempt!).select('id').maybeSingle();
+    const saved = await admin.from('note_captures').update({ status: 'ready', result, verified_at: new Date().toISOString() }).eq('id', captureId).eq('status', 'processing').eq('attempts', claimAttempt!).select('id').maybeSingle();
     if (saved.error || !saved.data) throw new Error('Processing finished but the result could not be retained. Please retry.');
     return reply(result);
   } catch (error) {

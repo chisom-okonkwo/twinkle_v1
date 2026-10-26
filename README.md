@@ -159,3 +159,7 @@ FR-16 shows optional related older thoughts after a save, without delaying captu
 ## Phase 2: historical note import
 
 FR-18 adds **Import notes** for UTF-8 text and Markdown files, with review, bounded batch processing, exact duplicate detection, safe retry, and preserved provenance. Imported notes use the existing collection and search; AI analysis remains on demand and flashbacks retain their settling period. See [setup, migrations, limits and Android testing](docs/IMPORT.md). FR-19 and later remain out of scope.
+
+## Media inside notes
+
+The note editor’s floating **+** offers **Photo** and **Audio**. Keep media with existing writing, or save a media-only note. Text extraction/transcription is optional, with review before appending. Notes support up to 10 private attachments and atomic saves. [Architecture, migrations, privacy and Android checks](docs/MEDIA-NOTES.md).

@@ -107,7 +107,8 @@ export function NoteContextPanel({ userId, note, noteDirty, disabled, onDirty, o
           {!generated.situation && CONTEXT_FIELDS.every((field) => !generated![field].length) ? <Text style={noteStyles.meta}>No additional context was needed.</Text> : null}
         </View> : null}
       </> : null}
-      {current && data.enabled && (['disabled', 'failed', 'pending'].includes(row!.status) || stale) ? <TextAction title={busy ? 'Starting…' : row!.status === 'failed' || stale ? 'Retry context analysis' : 'Analyze context'} disabled={locked} onPress={() => void analyze()} /> : null}
+      {current && data.enabled && note.content.trim() && (['disabled', 'failed', 'pending'].includes(row!.status) || stale) ? <TextAction title={busy ? 'Starting…' : row!.status === 'failed' || stale ? 'Retry context analysis' : 'Analyze context'} disabled={locked} onPress={() => void analyze()} /> : null}
+      {!note.content.trim() ? <Text style={noteStyles.meta}>Add words to give AI context something to work with. Your original media stays private.</Text> : null}
       {!data.enabled ? <Text style={noteStyles.meta}>AI enrichment is off for future notes. You can enable it on Notes Home.</Text> : null}
       {questionVisible && !editing ? <View style={{ gap: 6 }}>
         <Text style={noteStyles.meta}>Want to add a little context?</Text><Text style={noteStyles.preview}>{row!.prompt_question}</Text>

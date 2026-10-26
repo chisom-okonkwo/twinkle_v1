@@ -2,8 +2,8 @@ import { AudioModule, RecordingPresets, setAudioModeAsync, setIsAudioActiveAsync
 import * as ImagePicker from 'expo-image-picker';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Image, Platform, Text, View } from 'react-native';
-import { type CaptureAsset, type CaptureDraft, type CaptureKind, type CaptureRecord, discardDraft, downloadSource, localAsset, MAX_RECORDING_SECONDS, processCapture, removeLocalAsset, sourceUrl, stageCapture, unfinishedCaptures } from '../lib/captures';
+import { ActivityIndicator, AppState, Image, Platform, Text, TextInput, View } from 'react-native';
+import { type CaptureAsset, type CaptureDraft, type CaptureKind, type CaptureRecord, discardDraft, downloadSource, localAsset, MAX_RECORDING_SECONDS, processCapture, prepareCapture, removeLocalAsset, sourceUrl, stageCapture, unfinishedCaptures } from '../lib/captures';
 import { Confirmation, noteStyles, TextAction } from './note-ui';
 import { Action, errorMessage, Message, styles } from './ui';
 
@@ -57,11 +57,11 @@ export function SourcePreview({ kind, uri }: { kind: string; uri: string }) {
   return kind === 'image' ? <Image key={`${source}-${retry}`} source={{ uri: source }} onError={() => setError('The photo could not be displayed. Reload the source and try again.')} accessibilityLabel="Source photograph" resizeMode="contain" style={{ width: '100%', height: 240, borderRadius: 12 }} /> : <AudioPreview key={`${source}-${retry}`} uri={source} onRetry={retryPreview} />;
 }
 
-export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled = false }: {
+export function CapturePanel({ userId, draft, onDraft, onAdd, onBusy, disabled = false, excludedIds = [], request }: {
   userId: string; draft: CaptureDraft | null; disabled?: boolean; onDraft: (draft: CaptureDraft | null) => void;
-  onText: (text: string) => void; onBusy: (busy: boolean) => void;
+  onAdd: (draft: CaptureDraft) => void; onBusy: (busy: boolean) => void; excludedIds?: string[];
+  request?: { id: number; kind: 'camera' | 'library' | 'audio' } | null;
 }) {
-  const [mode, setMode] = useState<CaptureKind | 'text'>('text');
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -75,6 +75,7 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
   const handledUri = useRef<string | null>(null);
   const operation = useRef(false);
   const cancel = useRef<AbortController | null>(null);
+  const handledRequest = useRef<number | null>(null);
   const recorder = useAudioRecorder({ ...RecordingPresets.HIGH_QUALITY, bitRate: 96000, numberOfChannels: 1 }, (status) => {
     if (!active.current) return;
     if (status.hasError) setError('Recording was interrupted. Any available audio is kept below; review it before transcribing.');
@@ -99,6 +100,15 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
     // Recorder lifetime is owned by useAudioRecorder; do not re-run for callbacks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, recorder]);
+
+  useEffect(() => {
+    if (!request || handledRequest.current === request.id) return;
+    handledRequest.current = request.id;
+    if (request.kind === 'audio') void startRecording();
+    else void choosePhoto(request.kind === 'camera');
+    // Each menu action is handled once, including React's development remount checks.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request?.id]);
 
   async function run(action: () => Promise<void>) {
     if (operation.current || disabled) return;
@@ -172,35 +182,48 @@ export function CapturePanel({ userId, draft, onDraft, onText, onBusy, disabled 
       try { result = await processCapture(record.id, controller.signal); }
       finally { cancel.current = null; if (active.current) setProcessing(false); }
       cancel.current = null;
-      if (active.current) { onDraft({ ...staged, processed: true, warnings: result.warnings }); if (result.text) onText(result.text); }
+      if (active.current) onDraft({ ...staged, processed: true, warnings: result.warnings, extractedText: result.text });
     });
   }
+  async function attach() {
+    if (!draft) return;
+    await run(async () => {
+      setPhase('Preparing attachment…');
+      onDraft({ ...draft, remoteAttempted: true });
+      const record = await stageCapture(userId, draft, { onStaged: record => { if (active.current) onDraft({ ...draft, record, remoteAttempted: true }); } });
+      const staged = { ...draft, record, remoteAttempted: true };
+      if (active.current) onDraft(staged);
+      await prepareCapture(record.id);
+      if (active.current) onAdd({ ...staged, prepared: true });
+    });
+  }
+
   function resume(record: CaptureRecord) {
     void run(async () => {
       const uri = await sourceUrl(record);
-      if (active.current) { setMode(record.kind as CaptureKind); onDraft({ asset: { id: record.id, uri, kind: record.kind as CaptureKind, mime: record.mime_type, size: record.byte_size, remote: true }, record, processed: false, warnings: [] }); }
+      if (active.current) { onDraft({ asset: { id: record.id, uri, kind: record.kind as CaptureKind, mime: record.mime_type, size: record.byte_size, remote: true }, record, processed: false, warnings: [] }); }
     });
   }
 
   return <View style={{ gap: 12 }}>
     {!draft ? <>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        {(['text', 'image', 'audio'] as const).map((item) => <TextAction key={item} title={`${mode === item ? '• ' : ''}${item === 'image' ? 'Photo' : item === 'audio' ? 'Audio' : 'Text'}`} disabled={busy || disabled || recording} onPress={() => setMode(item)} />)}
-      </View>
-      {mode === 'image' ? <><Action title="Take a photo" disabled={busy || disabled} onPress={() => void choosePhoto(true)} /><Action title="Choose a photo" secondary disabled={busy || disabled} onPress={() => void choosePhoto(false)} /></> : null}
-      {mode === 'audio' ? <View style={noteStyles.card}>
+      {request?.kind === 'audio' ? <View style={noteStyles.card}>
         <Text style={styles.label}>{recording ? `Recording · ${Math.floor(recorderState.durationMillis / 1000)}s / 300s` : 'A thought, in your own voice'}</Text>
         <Text style={noteStyles.meta}>Up to 5 minutes. Recording stops when you leave the app.</Text>
         <Action title={recording ? 'Stop recording' : 'Start recording'} disabled={busy || disabled} onPress={() => void (recording ? stopRecording() : startRecording())} />
       </View> : null}
-      {pending.length > 0 && !recording ? <View style={{ gap: 4 }}><Text style={noteStyles.meta}>Unfinished captures · kept privately for 24 hours</Text>{pending.map((item) => <TextAction key={item.id} title={`Resume ${item.kind === 'image' ? 'photo' : 'recording'} · ${new Date(item.created_at).toLocaleTimeString()}`} disabled={busy || disabled} onPress={() => resume(item)} />)}</View> : null}
+      {pending.some(item => !excludedIds.includes(item.id)) && !recording ? <View style={{ gap: 4 }}><Text style={noteStyles.meta}>Unfinished captures · kept privately for 24 hours</Text>{pending.filter(item => !excludedIds.includes(item.id)).map((item) => <TextAction key={item.id} title={`Resume ${item.kind === 'image' ? 'photo' : 'recording'} · ${new Date(item.created_at).toLocaleTimeString()}`} disabled={busy || disabled} onPress={() => resume(item)} />)}</View> : null}
       {pendingError ? <Text style={noteStyles.meta}>Unfinished captures could not be checked. Text notes are still available.</Text> : null}
     </> : <View style={[noteStyles.card, { gap: 12 }]}>
       <Text style={styles.label}>{draft.asset.kind === 'image' ? 'Your photo' : 'Your recording'}</Text>
       <SourcePreview key={draft.asset.id} kind={draft.asset.kind} uri={draft.asset.uri} />
-      <Text style={noteStyles.meta}>{draft.processed ? 'Review the generated text below before saving. It may contain mistakes.' : 'Confirm to send this source to OpenAI for text extraction. Nothing is saved as a note until you review it and tap Save.'}</Text>
+      <Text style={noteStyles.meta}>{draft.processed ? 'Review the text before adding it. Your existing words stay intact. You can clear this text and keep just the attachment.' : 'Confirm to send this source to OpenAI for text extraction. Or add the original without using AI. Your existing note stays unchanged until you save.'}</Text>
+      {draft.processed ? <>
+        <TextInput accessibilityLabel="Review extracted text" multiline value={draft.extractedText ?? ''} onChangeText={extractedText => onDraft({ ...draft, extractedText })} style={[styles.input, styles.editor]} editable={!busy && !disabled} />
+      </> : null}
       {draft.warnings.map((warning, index) => <Message key={index} text={warning} />)}
-      {!draft.processed ? <Action title={busy ? phase ?? 'Preparing source…' : draft.asset.kind === 'image' ? 'Extract text' : 'Transcribe recording'} disabled={busy || disabled} onPress={process} /> : null}
+      <Action title={busy && !processing ? phase ?? 'Preparing attachment…' : 'Add to note'} disabled={busy || disabled} onPress={() => void attach()} />
+      {!draft.processed ? <Action secondary title={draft.asset.kind === 'image' ? 'Extract text (optional)' : 'Transcribe recording (optional)'} disabled={busy || disabled} onPress={process} /> : null}
       {processing ? <TextAction title="Stop waiting" onPress={() => cancel.current?.abort()} /> : null}
       <TextAction title="Discard source" destructive disabled={busy || disabled} onPress={() => setConfirmDiscard(true)} />
     </View>}

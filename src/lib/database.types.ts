@@ -105,6 +105,42 @@ export type Database = {
           },
         ]
       }
+      note_attachments: {
+        Row: {
+          capture_id: string
+          created_at: string
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          capture_id: string
+          created_at?: string
+          note_id: string
+          user_id: string
+        }
+        Update: {
+          capture_id?: string
+          created_at?: string
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_attachments_capture_owner_fkey"
+            columns: ["capture_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "note_captures"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "note_attachments_note_owner_fkey"
+            columns: ["note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       note_captures: {
         Row: {
           attempts: number
@@ -119,6 +155,7 @@ export type Database = {
           status: string
           storage_path: string
           user_id: string | null
+          verified_at: string | null
         }
         Insert: {
           attempts?: number
@@ -133,6 +170,7 @@ export type Database = {
           status?: string
           storage_path: string
           user_id?: string | null
+          verified_at?: string | null
         }
         Update: {
           attempts?: number
@@ -147,6 +185,7 @@ export type Database = {
           status?: string
           storage_path?: string
           user_id?: string | null
+          verified_at?: string | null
         }
         Relationships: []
       }
@@ -394,6 +433,7 @@ export type Database = {
           capture_method: string
           content: string
           created_at: string
+          has_attachments: boolean
           id: string
           import_metadata: Json | null
           source_capture_id: string | null
@@ -404,6 +444,7 @@ export type Database = {
           capture_method?: string
           content: string
           created_at?: string
+          has_attachments?: boolean
           id?: string
           import_metadata?: Json | null
           source_capture_id?: string | null
@@ -414,6 +455,7 @@ export type Database = {
           capture_method?: string
           content?: string
           created_at?: string
+          has_attachments?: boolean
           id?: string
           import_metadata?: Json | null
           source_capture_id?: string | null
@@ -592,6 +634,7 @@ export type Database = {
           status: string
           storage_path: string
           user_id: string | null
+          verified_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -615,6 +658,7 @@ export type Database = {
           status: string
           storage_path: string
           user_id: string | null
+          verified_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -689,6 +733,14 @@ export type Database = {
         Args: { body: string; file_name: string; metadata?: Json }
         Returns: Json
       }
+      list_note_attachments: {
+        Args: { target_id: string }
+        Returns: {
+          capture_id: string
+          created_at: string
+          kind: string
+        }[]
+      }
       read_related_notes: {
         Args: { target_id: string }
         Returns: {
@@ -744,6 +796,32 @@ export type Database = {
       respond_flashback: {
         Args: { feedback: string; target_id: string }
         Returns: undefined
+      }
+      save_note_with_attachments: {
+        Args: {
+          body: string
+          capture_ids?: string[]
+          expected_updated_at?: string
+          initial_capture_id?: string
+          target_id: string
+        }
+        Returns: {
+          capture_method: string
+          content: string
+          created_at: string
+          has_attachments: boolean
+          id: string
+          import_metadata: Json | null
+          source_capture_id: string | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       search_notes: {
         Args: { page_limit?: number; page_offset?: number; search_text: string }

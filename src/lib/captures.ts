@@ -9,7 +9,7 @@ import { getSupabase } from './supabase';
 
 export type CaptureRecord = Database['public']['Tables']['note_captures']['Row'];
 export type CaptureAsset = { id: string; uri: string; kind: CaptureKind; mime: string; size: number; remote?: boolean; ownedCache?: boolean };
-export type CaptureDraft = { asset: CaptureAsset; record?: CaptureRecord; processed: boolean; warnings: string[]; remoteAttempted?: boolean };
+export type CaptureDraft = { asset: CaptureAsset; record?: CaptureRecord; processed: boolean; warnings: string[]; remoteAttempted?: boolean; extractedText?: string; prepared?: boolean };
 export { MAX_RECORDING_SECONDS, MAX_MEDIA_BYTES } from '../../supabase/functions/_shared/capture-contract';
 export type { CaptureKind, CaptureResult };
 
@@ -72,7 +72,7 @@ export async function stageCapture(userId: string, draft: CaptureDraft, options:
   return record;
 }
 
-async function invokeCapture(action: 'process' | 'discard', captureId: string, signal?: AbortSignal) {
+async function invokeCapture(action: 'process' | 'discard' | 'prepare', captureId: string, signal?: AbortSignal) {
   const { data, error } = await getSupabase().functions.invoke('capture', { body: { action, captureId }, signal, timeout: 110000 });
   if (error) {
     if (error.context && typeof error.context.json === 'function') {
@@ -92,6 +92,10 @@ export async function processCapture(id: string, signal?: AbortSignal): Promise<
   return processWithRecovery({ readReady, process: async () => validateResult(await invokeCapture('process', id, signal)) }, signal);
 }
 export const discardCapture = async (id: string) => { await invokeCapture('discard', id); };
+export const prepareCapture = async (id: string) => withDeadline(async signal => {
+  const result = await invokeCapture('prepare', id, signal);
+  if (result?.prepared !== true) throw new Error('The attachment could not be prepared. Please retry.');
+}, 30000);
 export async function discardDraft(draft: CaptureDraft) {
   // Even if staging timed out before returning, its stable ID allows cleanup.
   if (draft.record || draft.remoteAttempted) await discardCapture(draft.record?.id ?? draft.asset.id);
