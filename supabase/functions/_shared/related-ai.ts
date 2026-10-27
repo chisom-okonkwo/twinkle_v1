@@ -1,9 +1,9 @@
 import { LINKS_INSTRUCTIONS, LINKS_SCHEMA, TERMS_INSTRUCTIONS, TERMS_SCHEMA, validateLinks, validateTerms, type RelatedInput } from './related-contract.ts';
 export type RelatedAIConfig = { key: string; model: string };
-async function structured(instructions: string, input: unknown, schema: object, name: string, config: RelatedAIConfig, fetcher: typeof fetch) {
+export async function structured(instructions: string, input: unknown, schema: object, name: string, config: RelatedAIConfig, fetcher: typeof fetch, maxOutputTokens = 2200, timeoutMs = 30000) {
   const response = await fetcher('https://api.openai.com/v1/responses', { method: 'POST',
-    headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(30000),
-    body: JSON.stringify({ model: config.model, store: false, max_output_tokens: 2200, reasoning: { effort: 'none' }, instructions,
+    headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(timeoutMs),
+    body: JSON.stringify({ model: config.model, store: false, max_output_tokens: maxOutputTokens, reasoning: { effort: 'none' }, instructions,
       input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify(input) }] }],
       text: { format: { type: 'json_schema', name, strict: true, schema } } }),
   });

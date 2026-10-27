@@ -1,0 +1,69 @@
+{
+  "positive": [
+    {
+      "a": "dream-short",
+      "b": "dream-school",
+      "key": "dream-school",
+      "similarity": 0.838806599409167,
+      "rank": 1
+    },
+    {
+      "a": "dream-boat",
+      "b": "dream-market",
+      "key": "dream-market",
+      "similarity": 0.715200840919848,
+      "rank": 1
+    },
+    {
+      "a": "business-short",
+      "b": "business-idea",
+      "key": "business-idea",
+      "similarity": 0.572344131714424,
+      "rank": 4
+    },
+    {
+      "a": "business-buyers",
+      "b": "business-test",
+      "key": "business-test",
+      "similarity": 0.550397745781538,
+      "rank": 4
+    },
+    {
+      "a": "learning-habits",
+      "b": "learning-discipline",
+      "key": "learning-discipline",
+      "similarity": 0.689828189813686,
+      "rank": 1
+    }
+  ],
+  "negative": [
+    {
+      "a": "dream-quote",
+      "b": "dream-station",
+      "key": "dream-station",
+      "similarity": 0.488043872906966,
+      "rank": 5
+    },
+    {
+      "a": "rocket",
+      "b": "business-idea",
+      "key": "business-idea",
+      "similarity": 0.323287542669795,
+      "rank": 5
+    },
+    {
+      "a": "statistics",
+      "b": "business-buyers",
+      "key": "business-buyers",
+      "similarity": 0.403330612864284,
+      "rank": 1
+    },
+    {
+      "a": "professional-discipline",
+      "b": "learning-discipline",
+      "key": "learning-discipline",
+      "similarity": 0.475233812558602,
+      "rank": 1
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "notes": [
+    {
+      "key": "network",
+      "text": "The router in the study needs a firmware update before the new access point is connected."
+    },
+    {
+      "key": "music",
+      "text": "The recording of the string quartet has a slower second movement than the concert performance."
+    },
+    {
+      "key": "printer",
+      "text": "A paper jam behind the printer roller can cause repeated misfeeds during double-sided printing."
+    },
+    {
+      "key": "museum",
+      "text": "The museum closes early on Tuesdays so I need to check the opening times before visiting."
+    },
+    {
+      "key": "invoice",
+      "text": "Ask the supplier to correct the shipping address on the replacement filter order."
+    },
+    {
+      "key": "astronomy",
+      "text": "The angular separation of the two observed stars changes as their binary orbit progresses."
+    },
+    {
+      "key": "shoes",
+      "text": "Check the soles and fit of the walking shoes before choosing a replacement pair."
+    },
+    {
+      "key": "charger",
+      "text": "The laptop requires a sixty-five watt USB charger with the right cable for reliable charging."
+    },
+    {
+      "key": "bread",
+      "text": "Bread dough can rest overnight in the refrigerator before the final rise and baking."
+    },
+    {
+      "key": "painting-wall",
+      "text": "The hallway wall needs a second coat of matte paint once the plaster has fully dried."
+    },
+    {
+      "key": "train",
+      "text": "The train ticket reference belongs with the itinerary for the morning departure next Thursday."
+    },
+    {
+      "key": "coffee",
+      "text": "Grinding coffee just before brewing preserves the aroma better than leaving it ground overnight."
+    },
+    {
+      "key": "statistics",
+      "text": "Confidence intervals describe uncertainty in a population estimate; they do not measure a person's willingness to publish creative work."
+    },
+    {
+      "key": "package-name",
+      "text": "Creative Confidence is the name of a CSS package in this synthetic example; I need to document its installation command."
+    },
+    {
+      "key": "milk",
+      "text": "Buy milk tomorrow."
+    },
+    {
+      "key": "sensitive",
+      "text": "A fictional character is grieving after a funeral; this reading note must stay out of suggested personal patterns."
+    },
+    {
+      "key": "bicycle",
+      "text": "I need to compare brake cables and tyre sizes before repairing the old bicycle this weekend."
+    },
+    {
+      "key": "garden",
+      "text": "The garden seedlings need morning sunlight and different watering intervals depending on their containers."
+    },
+    {
+      "key": "cooking",
+      "text": "Roasting vegetables separately keeps their texture better than putting every ingredient into one pot."
+    },
+    {
+      "key": "vocabulary",
+      "text": "Learning a language through everyday conversation seems more useful than only memorising vocabulary lists."
+    },
+    {
+      "key": "creative",
+      "text": "Sometimes creativity comes from showing up consistently, even when I do not feel inspired.",
+      "created": "2020-01-01T12:00:00Z"
+    },
+    {
+      "key": "artwork",
+      "text": "I hesitate to share my artwork because I worry about rejection from an audience.",
+      "created": "2021-02-01T12:00:00Z"
+    },
+    {
+      "key": "habits",
+      "text": "Building creative habits helps me make art instead of waiting for motivation."
+    },
+    {
+      "key": "pitch",
+      "text": "I am afraid to pitch an unfinished creative idea because others may dismiss it before I can develop it."
+    },
+    {
+      "key": "bridge",
+      "text": "Sharing a small creative draft consistently can help me build confidence in showing my work."
+    },
+    {
+      "key": "uncertain",
+      "text": "Maybe I will share an unfinished creative draft if the workshop feels welcoming; I have not decided yet."
+    },
+    {
+      "key": "publish",
+      "text": "Publishing my writing feels intimidating, but I want to become comfortable showing unfinished creative work."
+    },
+    {
+      "key": "discipline",
+      "text": "Discipline supports creative work by making room for regular practice."
+    }
+  ],
+  "positiveSets": [
+    [
+      "creative",
+      "habits",
+      "discipline",
+      "bridge"
+    ],
+    [
+      "artwork",
+      "pitch",
+      "publish",
+      "bridge",
+      "uncertain"
+    ]
+  ],
+  "forbidden": [
+    "statistics",
+    "package-name",
+    "milk",
+    "sensitive",
+    "bicycle",
+    "garden",
+    "cooking",
+    "vocabulary",
+    "coffee",
+    "train",
+    "painting-wall",
+    "bread",
+    "charger",
+    "shoes",
+    "astronomy",
+    "invoice",
+    "museum",
+    "printer",
+    "music",
+    "network"
+  ]
+}

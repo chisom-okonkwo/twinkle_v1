@@ -1,0 +1,18 @@
+[
+  {
+    "period": "recent",
+    "elapsedMs": 15685,
+    "groups": 4,
+    "indexed": 11,
+    "checked": 11,
+    "pending": 0
+  },
+  {
+    "period": "custom",
+    "elapsedMs": 23397,
+    "groups": 4,
+    "indexed": 11,
+    "checked": 11,
+    "pending": 0
+  }
+]

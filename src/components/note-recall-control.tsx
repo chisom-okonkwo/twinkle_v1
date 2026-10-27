@@ -51,10 +51,10 @@ export function NoteRecallControl({
       {excluded !== null ? (
         <>
           <Text style={noteStyles.meta}>
-            {excluded ? 'This note is excluded from flashbacks and discovery.' : 'You control which thoughts can return.'}
+            {excluded ? 'This note is excluded from flashbacks, discovery, and themes.' : 'You control which thoughts can return.'}
           </Text>
           <TextAction
-            title={excluded ? 'Allow this note in flashbacks and discovery' : 'Exclude this note from flashbacks and discovery'}
+            title={excluded ? 'Allow this note in flashbacks, discovery, and themes' : 'Exclude this note from flashbacks, discovery, and themes'}
             disabled={disabled || busy}
             onPress={() => void toggle()}
           />

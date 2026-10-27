@@ -1,0 +1,34 @@
+{
+  "collection": "private actual collection; aggregates only",
+  "notes": 28,
+  "eligible": 26,
+  "excluded": 2,
+  "previousStoredGroups": 0,
+  "newStoredGroups": 3,
+  "status": "ready",
+  "checked": 26,
+  "failed": 0,
+  "usage": [
+    {
+      "kind": "embedding",
+      "calls": 1,
+      "input_tokens": 1966,
+      "output_tokens": 0,
+      "api_elapsed_ms": 893
+    },
+    {
+      "kind": "validation",
+      "calls": 16,
+      "input_tokens": 40854,
+      "output_tokens": 5657,
+      "api_elapsed_ms": 54627
+    }
+  ],
+  "backfillElapsedMs": "522811",
+  "unchangedRepeat": {
+    "embeddingCallsAdded": 0,
+    "validationCallsAdded": 0
+  },
+  "quality": "User confirmed the corrected recent-period explanation and All time navigation on Android. Comprehensive supporting-note quality review remains distinct; aggregate/quote checks do not establish general semantic accuracy.",
+  "timingNote": "Includes minute-level continuation, backoff and reliability corrections during evaluation."
+}

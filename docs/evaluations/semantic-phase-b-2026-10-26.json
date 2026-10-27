@@ -1,0 +1,63 @@
+{
+  "phase": "B",
+  "initial": {
+    "ms": 3253,
+    "state": {
+      "total": 23,
+      "failed": 0,
+      "status": "completed",
+      "indexed": 23,
+      "waiting": 0,
+      "excluded": 1,
+      "error_code": null,
+      "processing": 0,
+      "unsupported": 0,
+      "budget_resume_at": null
+    }
+  },
+  "unchanged": {
+    "ms": 1501,
+    "state": {
+      "total": 23,
+      "failed": 0,
+      "status": "completed",
+      "indexed": 23,
+      "waiting": 0,
+      "excluded": 1,
+      "error_code": null,
+      "processing": 0,
+      "unsupported": 0,
+      "budget_resume_at": null
+    }
+  },
+  "edited": {
+    "ms": 1416,
+    "state": {
+      "total": 23,
+      "failed": 0,
+      "status": "completed",
+      "indexed": 23,
+      "waiting": 0,
+      "excluded": 1,
+      "error_code": null,
+      "processing": 0,
+      "unsupported": 0,
+      "budget_resume_at": null
+    }
+  },
+  "restored": {
+    "ms": 1292,
+    "state": {
+      "total": 23,
+      "failed": 0,
+      "status": "completed",
+      "indexed": 23,
+      "waiting": 0,
+      "excluded": 1,
+      "error_code": null,
+      "processing": 0,
+      "unsupported": 0,
+      "budget_resume_at": null
+    }
+  }
+}

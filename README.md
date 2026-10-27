@@ -158,11 +158,15 @@ FR-16 shows optional related older thoughts after a save, without delaying captu
 
 ## Phase 2: historical note import
 
-FR-18 adds **Import notes** for UTF-8 text, Markdown, and selected Google Keep JSON/HTML files (JSON preferred for paired formats), with review, bounded batch processing, exact duplicate detection, safe retry, and preserved provenance. Imported notes use the existing collection and search; AI analysis remains on demand and flashbacks retain their settling period. See [setup, migrations, limits and Android testing](docs/IMPORT.md). FR-19 and later remain out of scope.
+FR-18 adds **Import notes** for UTF-8 text, Markdown, and selected Google Keep JSON/HTML files (JSON preferred for paired formats), with review, bounded batch processing, exact duplicate detection, safe retry, and preserved provenance. Imported notes use the existing collection and search; AI analysis remains on demand and flashbacks retain their settling period. See [setup, migrations, limits and Android testing](docs/IMPORT.md).
 
 ## Media inside notes
 
 The note editor’s floating **+** offers **Photo** and **Audio**. Keep media with existing writing, or save a media-only note. Text extraction/transcription is optional, with review before appending. Notes support up to 10 private attachments and atomic saves. [Architecture, migrations, privacy and Android checks](docs/MEDIA-NOTES.md).
+
+## Phase 2: themes and related groups
+
+FR-19/20 add **Discover thoughts → Themes in your notes**. Private persistent embeddings connect coherent subjects across different wording, including titles and imports. Two-note groups are useful; recurrence requires three reliably dated notes across two local dates. All time/Past 90 days, original evidence, saved names/dismissals and durable background progress keep discovery inspectable. Imports wait for an explicit choice; unchanged results reuse cached work. See [deployment, evaluation, limitations and Android testing](docs/THEMES.md). FR-21 and later remain out of scope.
 
 ## Editable note titles
 

@@ -32,7 +32,8 @@ export function ContextPreferences({ userId }: { userId: string }) {
   return <View style={{ gap: 4 }}>
     <TextAction title={loaded ? `AI context · ${enabled ? 'On' : 'Off'}` : 'AI context settings'} onPress={() => setExpanded((value) => !value)} />
     {expanded ? <View style={{ gap: 8 }}>
-      <Text style={noteStyles.meta}>When enabled, new and edited notes are sent securely to OpenAI after saving to preserve useful context. Your original words stay unchanged. Older notes are analyzed only when you save an edit or choose Analyze context on that note.</Text>
+      <Text style={noteStyles.meta}>When enabled, new and edited notes are sent securely to OpenAI after saving to preserve useful context. Your original words stay unchanged. Older notes receive their own context analysis only when you save an edit or choose Analyze context on that note.</Text>
+      <Text style={noteStyles.meta}>Find themes lets Twinkle privately index saved thoughts, including older imports, and check small groups for shared subjects. New and edited notes can update discovery in the background. Reopening themes reuses saved results. Importing by itself never starts this analysis.</Text>
       <Text style={noteStyles.meta}>When a note is selected for a flashback, AI may also choose a useful excerpt from its existing generated context. Your own additions are not sent for this. After you save or when you open a saved note, AI can also compare it with a small set of candidate notes to find useful connections. This includes your saved source details and added context. Connections are checked after saving, never on each keystroke. You can turn AI off at any time. Your own added context is always available.</Text>
       <Action secondary title={busy ? 'Updating…' : enabled ? 'Disable future enrichment' : 'Enable AI context'} disabled={!loaded || busy} onPress={() => void toggle()} />
     </View> : null}

@@ -428,6 +428,93 @@ export type Database = {
           },
         ]
       }
+      note_theme_members: {
+        Row: {
+          content_hash: string
+          evidence_field: string
+          input_hash: string
+          job_id: string | null
+          note_id: string
+          quote: string
+          scope_key: string
+          theme_id: string
+          user_id: string
+        }
+        Insert: {
+          content_hash: string
+          evidence_field?: string
+          input_hash?: string
+          job_id?: string | null
+          note_id: string
+          quote: string
+          scope_key?: string
+          theme_id: string
+          user_id: string
+        }
+        Update: {
+          content_hash?: string
+          evidence_field?: string
+          input_hash?: string
+          job_id?: string | null
+          note_id?: string
+          quote?: string
+          scope_key?: string
+          theme_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_theme_members_note_id_user_id_fkey"
+            columns: ["note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "note_theme_members_theme_id_user_id_fkey"
+            columns: ["theme_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "note_themes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      note_themes: {
+        Row: {
+          created_at: string
+          description: string
+          dismissed: boolean
+          engine_version: number
+          generated_label: string
+          id: string
+          theme_key: string
+          user_id: string
+          user_label: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          dismissed?: boolean
+          engine_version?: number
+          generated_label: string
+          id?: string
+          theme_key: string
+          user_id: string
+          user_label?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          dismissed?: boolean
+          engine_version?: number
+          generated_label?: string
+          id?: string
+          theme_key?: string
+          user_id?: string
+          user_label?: string | null
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           capture_method: string
@@ -620,8 +707,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_semantic_history: {
+        Args: { caller_id: string }
+        Returns: undefined
+      }
       authorize_capture_cleanup: { Args: { token: string }; Returns: boolean }
       authorize_recall_scheduler: { Args: { secret: string }; Returns: boolean }
+      authorize_semantic_worker: { Args: { secret: string }; Returns: boolean }
+      begin_semantic_scope: {
+        Args: { caller_id: string; run_token: string; scope: string }
+        Returns: undefined
+      }
+      cache_semantic_validation: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          result: Json
+          target_job: string
+        }
+        Returns: boolean
+      }
       claim_capture_deletion: {
         Args: { caller_id?: string; capture_id: string }
         Returns: {
@@ -683,6 +788,18 @@ export type Database = {
         Args: { caller_id: string; retry?: boolean; target_id: string }
         Returns: Json
       }
+      claim_semantic_embeddings: {
+        Args: { caller_id: string; run_token: string }
+        Returns: Json
+      }
+      claim_semantic_group: {
+        Args: { caller_id: string; run_token: string; scope: string }
+        Returns: Json
+      }
+      claim_semantic_run: {
+        Args: { caller_id: string; retry?: boolean }
+        Returns: Json
+      }
       discovery_candidates: {
         Args: {
           caller_id: string
@@ -699,6 +816,24 @@ export type Database = {
         Args: { origin_id: string; target_id: string }
         Returns: undefined
       }
+      end_semantic_run: {
+        Args: {
+          caller_id: string
+          diagnostics?: Json
+          failure?: string
+          run_token: string
+        }
+        Returns: undefined
+      }
+      enqueue_semantic_group: {
+        Args: {
+          caller_id: string
+          cores: Json
+          model_name: string
+          scope: string
+        }
+        Returns: string
+      }
       fail_note_context: {
         Args: {
           caller_id: string
@@ -706,6 +841,19 @@ export type Database = {
           code: string
           expected_revision: number
           target_id: string
+        }
+        Returns: undefined
+      }
+      fail_semantic_embeddings: {
+        Args: { caller_id: string; claims: Json; failure: string }
+        Returns: undefined
+      }
+      fail_semantic_group: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          failure: string
+          target_job: string
         }
         Returns: undefined
       }
@@ -732,6 +880,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      finish_semantic_embeddings: {
+        Args: { caller_id: string; results: Json }
+        Returns: number
+      }
+      finish_semantic_work: {
+        Args: { caller_id: string; run_token: string; scope: string }
+        Returns: undefined
+      }
       import_text_note: {
         Args: { body: string; file_name: string; metadata?: Json }
         Returns: Json
@@ -743,6 +899,34 @@ export type Database = {
           created_at: string
           kind: string
         }[]
+      }
+      mark_semantic_no_candidates: {
+        Args: {
+          caller_id: string
+          expected_hash: string
+          scope: string
+          target_id: string
+        }
+        Returns: undefined
+      }
+      note_theme_snapshot: { Args: { period?: string }; Returns: Json }
+      persist_semantic_validation: {
+        Args: { caller_id: string; claim_token: string; target_job: string }
+        Returns: Json
+      }
+      prepare_semantic_scope: {
+        Args: {
+          caller_id: string
+          period?: string
+          range_end?: string
+          range_start?: string
+          zone?: string
+        }
+        Returns: Json
+      }
+      read_note_theme_members: {
+        Args: { page_offset?: number; period?: string; target_id: string }
+        Returns: Json
       }
       read_related_notes: {
         Args: { target_id: string }
@@ -770,9 +954,30 @@ export type Database = {
         Args: { caller_id: string; origin_id: string; target_ids: string[] }
         Returns: undefined
       }
+      record_semantic_usage: {
+        Args: {
+          call_id: string
+          caller_id: string
+          elapsed_ms?: number
+          input_tokens: number
+          kind: string
+          model: string
+          output_tokens?: number
+          request_count?: number
+        }
+        Returns: undefined
+      }
       rediscovery_eligible: {
         Args: { owner_id: string; target_id: string }
         Returns: boolean
+      }
+      refresh_semantic_relation_batch: {
+        Args: { caller_id: string }
+        Returns: number
+      }
+      refresh_semantic_relations: {
+        Args: { caller_id: string; target_id: string }
+        Returns: number
       }
       register_recall_device: {
         Args: { device_platform: string; installation: string; token: string }
@@ -785,6 +990,10 @@ export type Database = {
       related_note_input: {
         Args: { caller_id: string; target_id: string }
         Returns: Json
+      }
+      request_semantic_work: {
+        Args: { caller_id: string; retry?: boolean; scope: string }
+        Returns: undefined
       }
       reserve_discovery: {
         Args: {
@@ -800,6 +1009,7 @@ export type Database = {
         Args: { feedback: string; target_id: string }
         Returns: undefined
       }
+      retry_semantic_groups: { Args: { caller_id: string }; Returns: undefined }
       save_note_with_attachments: {
         Args: {
           body: string
@@ -840,6 +1050,30 @@ export type Database = {
           title: string
           updated_at: string
         }[]
+      }
+      semantic_backlog: { Args: never; Returns: Json }
+      semantic_candidate_graph: {
+        Args: { caller_id: string; scope: string; target_id: string }
+        Returns: Json
+      }
+      semantic_index_snapshot: { Args: never; Returns: Json }
+      semantic_neighbours: {
+        Args: {
+          caller_id: string
+          max_count?: number
+          range_end?: string
+          range_start?: string
+          target_id: string
+        }
+        Returns: Json
+      }
+      semantic_note_payload: {
+        Args: { caller_id: string; target_id: string }
+        Returns: Json
+      }
+      semantic_scope_anchors: {
+        Args: { caller_id: string; scope: string }
+        Returns: Json
       }
       unregister_recall_device: {
         Args: { installation: string }

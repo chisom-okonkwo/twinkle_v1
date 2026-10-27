@@ -98,3 +98,7 @@ The FR-14/15 phase did not add capture resurfacing. The later [FR-16/17 implemen
 - [Expo SDK 58](https://docs.expo.dev/versions/v58.0.0/), [Expo Router](https://docs.expo.dev/versions/v58.0.0/sdk/router/), [Expo Linking](https://docs.expo.dev/versions/v58.0.0/sdk/linking/)
 - [Supabase full-text search and ranking](https://supabase.com/docs/guides/database/full-text-search), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [background Edge tasks](https://supabase.com/docs/guides/functions/background-tasks)
 - [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs), [gpt-6-luna](https://developers.openai.com/api/docs/models/gpt-6-luna)
+
+The later [FR-19/20 themes and groups implementation](THEMES.md) reuses this foundation. This guide describes its original requirement scope.
+
+The semantic FR-19/20 upgrade adds owner-scoped persistent neighbours as bounded FR-15 candidates. Original AI relationship scores stay separate from cosine similarity; existing evidence validation, privacy controls and lexical fallback remain. See [the shared semantic foundation](THEMES.md).

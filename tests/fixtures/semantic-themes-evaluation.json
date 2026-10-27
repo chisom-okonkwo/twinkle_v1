@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "week": {
+    "start": "2026-10-19T00:00:00Z",
+    "end": "2026-10-26T00:00:00Z"
+  },
+  "notes": [
+    {
+      "key": "dream-station",
+      "title": "Dream journal \u2014 familiar railway station",
+      "body": "I returned to the station I knew as a child. Its platforms were rearranged, but I recognised the clock. Then I woke up.",
+      "date": "2025-03-01T12:00:00Z"
+    },
+    {
+      "key": "dream-school",
+      "title": "Dream \u2014 back at my old school",
+      "body": "I found myself in the school I attended years ago. The corridors seemed longer. I knew I had been here before.",
+      "date": "2026-10-20T12:00:00Z"
+    },
+    {
+      "key": "dream-street",
+      "title": "Dream journal \u2014 returning to a familiar street",
+      "body": "The street from my childhood appeared again, with the same corner shop but a different coloured door.",
+      "date": "2026-10-22T12:00:00Z"
+    },
+    {
+      "key": "dream-boat",
+      "title": "Dream journal \u2014 a boat in the clouds",
+      "body": "A wooden boat drifted above the clouds. I watched silver birds land on its sail before waking.",
+      "date": "2026-10-21T12:00:00Z"
+    },
+    {
+      "key": "dream-market",
+      "title": "Dream journal \u2014 floating market",
+      "body": "I was floating over an unfamiliar market where each stall sold a different kind of music.",
+      "date": "2026-10-23T12:00:00Z"
+    },
+    {
+      "key": "dream-short",
+      "title": "Dream \u2014 old school again",
+      "body": "Same familiar corridor.",
+      "date": "2026-10-24T12:00:00Z"
+    },
+    {
+      "key": "business-idea",
+      "title": "Starting a small business",
+      "body": "Before launching a meal-preparation service, I want to test whether people will pay for a weekly menu.",
+      "date": "2025-05-01T12:00:00Z"
+    },
+    {
+      "key": "business-buyers",
+      "title": "First customer conversations",
+      "body": "Speaking with potential buyers will help test my new venture. Practising these conversations also helps me develop confidence in explaining my ideas.",
+      "date": "2026-10-20T12:00:00Z"
+    },
+    {
+      "key": "business-test",
+      "title": "Testing an offer",
+      "body": "A simple landing page and a small paid trial could show whether the proposed service solves a real problem. I have not launched it yet.",
+      "date": "2026-10-22T12:00:00Z"
+    },
+    {
+      "key": "business-short",
+      "title": "Business launch experiment",
+      "body": "Ask five potential buyers.",
+      "date": "2026-10-23T12:00:00Z"
+    },
+    {
+      "key": "business-unknown-date",
+      "title": "An old thought about a new venture",
+      "body": "Find a small first customer group before committing to building the entire product.",
+      "imported": true
+    },
+    {
+      "key": "learning-habits",
+      "title": "Learning and personal development",
+      "body": "I want a small daily learning habit that is easier to sustain than occasional intense study sessions.",
+      "date": "2026-10-19T12:00:00Z"
+    },
+    {
+      "key": "learning-feedback",
+      "title": "Getting better through feedback",
+      "body": "Asking for specific feedback after practising a skill may help me improve more than repeating it without reflection.",
+      "date": "2026-10-21T12:00:00Z"
+    },
+    {
+      "key": "learning-discipline",
+      "title": "Personal discipline",
+      "body": "Consistent routines can support progress, but I also need to adapt the routine when it no longer helps me learn.",
+      "date": "2026-10-23T12:00:00Z"
+    },
+    {
+      "key": "statistics",
+      "title": "Confidence interval calculation",
+      "body": "The confidence interval estimates uncertainty in a population statistic. It does not describe willingness to speak or start a business."
+    },
+    {
+      "key": "rocket",
+      "title": "Launch trajectory",
+      "body": "The rocket launch calculation compares fuel consumption with orbital velocity and atmospheric drag."
+    },
+    {
+      "key": "professional-discipline",
+      "title": "Professional conduct board",
+      "body": "The board applies disciplinary rules to misconduct complaints. This describes a legal procedure, not a personal learning routine."
+    },
+    {
+      "key": "dream-quote",
+      "title": "A quotation in a history essay",
+      "body": "The phrase I have a dream appears in a public speech about civil rights. This is not a journal entry about sleep."
+    },
+    {
+      "key": "dream-fiction",
+      "title": "Fiction draft \u2014 a character's dream",
+      "body": "In this invented story, a character dreams of a familiar station. These are fictional events, not the writer's recorded experience."
+    },
+    {
+      "key": "milk",
+      "title": "Groceries",
+      "body": "Buy milk."
+    },
+    {
+      "key": "bicycle",
+      "title": "Repair parts",
+      "body": "Check the brake cable length and tyre size before replacing the wheel on the old bicycle."
+    },
+    {
+      "key": "garden",
+      "title": "Seedlings",
+      "body": "Move the seedlings into morning light and check the soil moisture before watering each container."
+    },
+    {
+      "key": "sensitive",
+      "title": "Private health reflection",
+      "body": "A therapy conversation about grief belongs outside automatic suggested patterns."
+    },
+    {
+      "key": "ambiguous",
+      "title": "A vague thought",
+      "body": "Maybe that thing from before will make sense later."
+    }
+  ],
+  "expectedGroups": [
+    {
+      "concept": "Recorded dreams",
+      "members": [
+        "dream-station",
+        "dream-school",
+        "dream-street",
+        "dream-boat",
+        "dream-market",
+        "dream-short"
+      ],
+      "minimumRecall": 5,
+      "forbidden": [
+        "ambiguous",
+        "bicycle",
+        "business-buyers",
+        "business-idea",
+        "business-short",
+        "business-test",
+        "business-unknown-date",
+        "dream-fiction",
+        "dream-quote",
+        "garden",
+        "learning-discipline",
+        "learning-feedback",
+        "learning-habits",
+        "milk",
+        "professional-discipline",
+        "rocket",
+        "sensitive",
+        "statistics"
+      ]
+    },
+    {
+      "concept": "Returning to familiar places in recorded dreams",
+      "members": [
+        "dream-station",
+        "dream-school",
+        "dream-street",
+        "dream-short"
+      ],
+      "minimumRecall": 3,
+      "forbidden": [
+        "ambiguous",
+        "bicycle",
+        "business-buyers",
+        "business-idea",
+        "business-short",
+        "business-test",
+        "business-unknown-date",
+        "dream-boat",
+        "dream-fiction",
+        "dream-market",
+        "dream-quote",
+        "garden",
+        "learning-discipline",
+        "learning-feedback",
+        "learning-habits",
+        "milk",
+        "professional-discipline",
+        "rocket",
+        "sensitive",
+        "statistics"
+      ]
+    },
+    {
+      "concept": "Starting and testing a business",
+      "members": [
+        "business-idea",
+        "business-buyers",
+        "business-test",
+        "business-short",
+        "business-unknown-date"
+      ],
+      "minimumRecall": 3,
+      "forbidden": [
+        "ambiguous",
+        "bicycle",
+        "dream-boat",
+        "dream-fiction",
+        "dream-market",
+        "dream-quote",
+        "dream-school",
+        "dream-short",
+        "dream-station",
+        "dream-street",
+        "garden",
+        "learning-discipline",
+        "learning-feedback",
+        "learning-habits",
+        "milk",
+        "professional-discipline",
+        "rocket",
+        "sensitive",
+        "statistics"
+      ]
+    },
+    {
+      "concept": "Learning and personal development",
+      "members": [
+        "learning-habits",
+        "learning-feedback",
+        "learning-discipline",
+        "business-buyers"
+      ],
+      "minimumRecall": 3,
+      "forbidden": [
+        "ambiguous",
+        "bicycle",
+        "business-idea",
+        "business-short",
+        "business-test",
+        "business-unknown-date",
+        "dream-boat",
+        "dream-fiction",
+        "dream-market",
+        "dream-quote",
+        "dream-school",
+        "dream-short",
+        "dream-station",
+        "dream-street",
+        "garden",
+        "milk",
+        "professional-discipline",
+        "rocket",
+        "sensitive",
+        "statistics"
+      ]
+    }
+  ],
+  "positiveNeighbours": [
+    [
+      "dream-short",
+      "dream-school"
+    ],
+    [
+      "dream-boat",
+      "dream-market"
+    ],
+    [
+      "business-short",
+      "business-idea"
+    ],
+    [
+      "business-buyers",
+      "business-test"
+    ],
+    [
+      "learning-habits",
+      "learning-discipline"
+    ]
+  ],
+  "negativeNeighbours": [
+    [
+      "dream-quote",
+      "dream-station"
+    ],
+    [
+      "rocket",
+      "business-idea"
+    ],
+    [
+      "statistics",
+      "business-buyers"
+    ],
+    [
+      "professional-discipline",
+      "learning-discipline"
+    ]
+  ],
+  "mustRemainUngrouped": [
+    "milk",
+    "bicycle",
+    "garden",
+    "sensitive",
+    "ambiguous"
+  ],
+  "rubricVersion": 2
+}

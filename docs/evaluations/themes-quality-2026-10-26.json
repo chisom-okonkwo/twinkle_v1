@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-26T19:18:17.085Z",
+  "kind": "Synthetic semantic smoke evaluation, not a general accuracy guarantee",
+  "batches": [
+    {
+      "elapsedMs": 7221,
+      "checked": 26,
+      "total": 26,
+      "themes": 2
+    }
+  ],
+  "themes": [
+    {
+      "label": "Creative practice through consistency",
+      "description": "Regular practice and creative habits are presented as ways to make work without waiting for inspiration or motivation.",
+      "count": 4,
+      "keys": [
+        "discipline",
+        "bridge",
+        "habits",
+        "creative"
+      ]
+    },
+    {
+      "label": "Creative sharing amid fear of rejection",
+      "description": "These notes describe hesitation about showing creative work because of possible dismissal or rejection, alongside interest in becoming more comfortable sharing.",
+      "count": 4,
+      "keys": [
+        "publish",
+        "uncertain",
+        "pitch",
+        "artwork"
+      ]
+    }
+  ],
+  "checks": [
+    "specific conceptual groups; no false generic/sensitive matches; distinct counts; month totals; original evidence; persistence; cross-user denial",
+    "rename/dismiss/restore; edit/delete invalidation; recent window; two-note collection returns no pattern without AI"
+  ]
+}

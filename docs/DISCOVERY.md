@@ -110,3 +110,7 @@ There is no guarantee of a result when no safe, substantive, accessible thought 
 FR-18 import, themes/clustering, analytics, creative generation, chat assistants, knowledge graphs and new notification types remain out of scope.
 
 Official references checked: [Expo SDK 58](https://docs.expo.dev/versions/v58.0.0/), [Router](https://docs.expo.dev/versions/v58.0.0/sdk/router/), [Crypto](https://docs.expo.dev/versions/v58.0.0/sdk/crypto/), [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [full-text search](https://supabase.com/docs/guides/database/full-text-search) and the [Supabase changelog](https://supabase.com/changelog).
+
+The later [FR-19/20 themes and groups implementation](THEMES.md) reuses this foundation. This guide describes its original requirement scope.
+
+The semantic FR-19/20 upgrade changes only the theme path and adds reusable FR-15 candidate evidence. Existing intentional discovery and capture resurfacing keep their behavior. [Theme architecture and verification](THEMES.md).

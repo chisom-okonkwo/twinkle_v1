@@ -20,3 +20,12 @@ verify_jwt = false
 
 [functions.discover-notes]
 verify_jwt = false
+
+[functions.note-themes]
+verify_jwt = false
+
+[functions.semantic-notes]
+verify_jwt = false
+
+[functions.semantic-worker]
+verify_jwt = false

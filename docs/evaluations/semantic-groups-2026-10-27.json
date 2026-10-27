@@ -1,0 +1,79 @@
+{
+  "phase": "D",
+  "elapsedMs": 16148,
+  "progress": {
+    "total": 23,
+    "failed": 0,
+    "status": "completed",
+    "indexed": 23,
+    "waiting": 0,
+    "excluded": 1,
+    "error_code": null,
+    "processing": 0,
+    "unsupported": 0,
+    "budget_resume_at": null
+  },
+  "groups": [
+    {
+      "label": "Dream journal entries",
+      "count": 6,
+      "keys": [
+        "dream-short",
+        "dream-market",
+        "dream-street",
+        "dream-boat",
+        "dream-school",
+        "dream-station"
+      ]
+    },
+    {
+      "label": "Testing demand before building a venture",
+      "count": 4,
+      "keys": [
+        "business-unknown-date",
+        "business-test",
+        "business-buyers",
+        "business-idea"
+      ]
+    },
+    {
+      "label": "Revisiting familiar places in dreams",
+      "count": 4,
+      "keys": [
+        "dream-short",
+        "dream-street",
+        "dream-school",
+        "dream-station"
+      ]
+    },
+    {
+      "label": "Learning and personal development",
+      "count": 4,
+      "keys": [
+        "learning-discipline",
+        "learning-feedback",
+        "business-buyers",
+        "learning-habits"
+      ]
+    }
+  ],
+  "rubric": [
+    {
+      "concept": "Recorded dreams",
+      "found": true
+    },
+    {
+      "concept": "Returning to familiar places in recorded dreams",
+      "found": true
+    },
+    {
+      "concept": "Starting and testing a business",
+      "found": true
+    },
+    {
+      "concept": "Learning and personal development",
+      "found": true
+    }
+  ],
+  "unwanted": []
+}

@@ -58,6 +58,7 @@ function DiscoverThoughts({ userId }: { userId: string }) {
     <TextAction title="‹ Notes" onPress={() => router.canGoBack() ? router.back() : router.replace('/')} />
     <Text accessibilityRole="header" style={styles.title}>Discover a thought</Text>
     <Text style={styles.subtitle}>A little room to revisit something you kept.</Text>
+    <TextAction title="Themes in your notes" onPress={() => router.push('/themes')} />
     <Action title={exhausted ? "Start another round" : "Surprise me"} disabled={loading} onPress={() => exhausted ? anotherRound() : start('surprise')} />
     <TextInput accessibilityLabel="Optional topic to explore" placeholder="Or explore a topic, source, or idea" value={topic} onChangeText={setTopic} maxLength={200} editable={!loading} style={styles.input} returnKeyType="search" onSubmitEditing={() => { if (/[\p{L}\p{N}]/u.test(topic)) start('topic'); }} />
     <Action secondary title="Explore this topic" disabled={loading || !/[\p{L}\p{N}]/u.test(topic)} onPress={() => start('topic')} />

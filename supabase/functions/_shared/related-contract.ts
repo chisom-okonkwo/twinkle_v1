@@ -1,5 +1,5 @@
 import { normalizeContextInput } from './context-contract.ts';
-export type RelatedInput = { id: string; content: string; context: string; source: { type: string; name: string; url: string; description: string } | null };
+export type RelatedInput = { id: string; title?: string; content: string; context: string; source: { type: string; name: string; url: string; description: string } | null };
 export type RelatedLink = { id: string; explanation: string; origin_quote: string; related_quote: string; score: number };
 export const TERMS_SCHEMA = { type: 'object', additionalProperties: false, required: ['terms'], properties: { terms: { type: 'array', items: { type: 'string' } } } };
 export const LINKS_SCHEMA = { type: 'object', additionalProperties: false, required: ['links'], properties: { links: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['id','explanation','origin_quote','related_quote','score'], properties: {
@@ -13,7 +13,7 @@ export function validateTerms(value: unknown): string[] {
   if (!Array.isArray(terms) || terms.length > 12 || terms.some(t => typeof t !== 'string' || !t.trim() || t.length > 80 || /[\r\n]/.test(t))) throw new Error('invalid_result');
   return [...new Set(terms.map(t => t.trim()))];
 }
-function evidence(quote: unknown, content: string) {
+export function evidence(quote: unknown, content: string) {
   if (typeof quote !== 'string' || !quote.trim() || quote.length > 400) throw new Error('invalid_result');
   const source = normalizeContextInput(content), exact = normalizeContextInput(quote);
   const at = source.indexOf(exact);
