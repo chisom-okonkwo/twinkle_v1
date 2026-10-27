@@ -60,3 +60,22 @@ test('missing notes and API errors are surfaced for retry', async () => {
   const { repository } = fixture({ message: 'Network unavailable', code: '503' }, 503);
   await assert.rejects(repository.list('owner'), { message: 'Network unavailable' });
 });
+
+test('a separate title is saved without moving or rewriting the first body line', async () => {
+  const content = 'The first line is still body text.\n\n- [x] Keep my checklist\n';
+  const { repository, requests } = fixture({ id: 'note', title: 'A separate heading', content });
+  const saved = await repository.save('owner', content, undefined, undefined, '  A separate heading  ');
+  assert.equal(saved.title, 'A separate heading');
+  assert.deepEqual(requests[0].body, { user_id: 'owner', content, title: 'A separate heading' });
+});
+
+test('renaming or clearing an imported title changes only editable fields and keeps conflict protection', async () => {
+  for (const title of ['A new title', '']) {
+    const { repository, requests } = fixture({ id: 'note', title, content: 'Unchanged body' });
+    const previous = { id: 'note', updated_at: '2026-10-26T10:00:00Z' };
+    await repository.save('owner', 'Unchanged body', previous, undefined, title);
+    assert.deepEqual(requests[0].body, { content: 'Unchanged body', title });
+    assert.equal(requests[0].url.searchParams.get('updated_at'), `eq.${previous.updated_at}`);
+    assert.equal('import_metadata' in requests[0].body, false);
+  }
+});

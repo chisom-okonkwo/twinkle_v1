@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { importProvenance } from '../lib/import-provenance';
+import { notePresentation } from '../lib/note-title';
 import type { Note } from '../lib/notes';
 import { Action, styles } from './ui';
 
@@ -32,10 +33,8 @@ export function Confirmation({ visible, title, description, confirmLabel, cancel
 }
 
 export const NoteCard = memo(function NoteCard({ note, onOpen }: { note: Note; onOpen: (id: string) => void }) {
-  const lines = note.content.trim().split(/\r?\n/);
   const imported = importProvenance(note.import_metadata);
-  const title = imported?.title || (lines[0] ? lines[0].slice(0, 160) + (lines[0].length > 160 ? '…' : '') : note.capture_method === 'image' ? 'Photo note' : note.capture_method === 'audio' ? 'Audio note' : 'Note with attachments');
-  const preview = (imported ? lines : lines.slice(1)).join('\n').trim().slice(0, 500);
+  const { title, preview } = notePresentation(note);
   return <Pressable onPress={() => onOpen(note.id)} accessibilityRole="button"
     accessibilityLabel={`Open note: ${title.slice(0, 100)}`}
     style={({ pressed }) => [noteStyles.card, pressed && noteStyles.cardPressed]}>
@@ -71,6 +70,7 @@ export const noteStyles = StyleSheet.create({
   banner: { paddingVertical: 12, gap: 8 },
   footer: { paddingVertical: 20, gap: 10 },
   editorBody: { flexGrow: 1, padding: 24, gap: 16 },
+  editorTitle: { padding: 0, paddingVertical: 8, fontSize: 28, lineHeight: 36, fontWeight: '600', color: '#29263d' },
   editor: { flex: 1, minHeight: 300, padding: 0, paddingTop: 8, fontSize: 20, lineHeight: 31, color: '#29263d', textAlignVertical: 'top' },
   editorMeta: { gap: 4, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#e5e1eb' },
   backdrop: { flex: 1, backgroundColor: 'rgba(32, 27, 45, 0.35)', justifyContent: 'center', alignItems: 'center', padding: 24 },

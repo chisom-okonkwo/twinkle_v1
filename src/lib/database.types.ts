@@ -437,6 +437,7 @@ export type Database = {
           id: string
           import_metadata: Json | null
           source_capture_id: string | null
+          title: string
           updated_at: string
           user_id: string
         }
@@ -448,6 +449,7 @@ export type Database = {
           id?: string
           import_metadata?: Json | null
           source_capture_id?: string | null
+          title?: string
           updated_at?: string
           user_id?: string
         }
@@ -459,6 +461,7 @@ export type Database = {
           id?: string
           import_metadata?: Json | null
           source_capture_id?: string | null
+          title?: string
           updated_at?: string
           user_id?: string
         }
@@ -803,6 +806,7 @@ export type Database = {
           capture_ids?: string[]
           expected_updated_at?: string
           initial_capture_id?: string
+          note_title?: string
           target_id: string
         }
         Returns: {
@@ -813,6 +817,7 @@ export type Database = {
           id: string
           import_metadata: Json | null
           source_capture_id: string | null
+          title: string
           updated_at: string
           user_id: string
         }[]

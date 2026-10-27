@@ -3,6 +3,7 @@ import { randomUUID } from 'expo-crypto';
 import { NoteAttachmentsPanel } from '../components/note-attachments-panel';
 import { appendCaptureText, MAX_NOTE_ATTACHMENTS, type NoteAttachment } from '../lib/attachments-repository';
 import { importProvenance } from '../lib/import-provenance';
+import { MAX_NOTE_TITLE_LENGTH } from '../lib/note-title';
 import { useCaptureConnections } from '../providers/capture-connections-provider';
 import { NoteSourcePanel } from '../components/note-source-panel';
 import { RelatedNotesPanel } from '../components/related-notes-panel';
@@ -32,6 +33,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   const validId = !id || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   const [note, setNote] = useState<Note | null>(null);
   const [content, setContent] = useState('');
+  const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(Boolean(id) && validId);
   const [loadError, setLoadError] = useState<string | null>(validId ? null : 'This note link is invalid.');
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
   const [relatedVersion, setRelatedVersion] = useState(0);
   const active = useRef(true);
   const operation = useRef(false);
-  const noteDirty = content !== (note?.content ?? '') || Boolean(draft) || added.length > 0 || removed.length > 0;
+  const noteDirty = title !== (note?.title ?? '') || content !== (note?.content ?? '') || Boolean(draft) || added.length > 0 || removed.length > 0;
   const dirty = noteDirty || contextDirty || sourceDirty;
   const imported = importProvenance(note?.import_metadata);
 
@@ -81,6 +83,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
       if (!current) return;
       setNote(saved);
       setContent(saved.content);
+      setTitle(saved.title);
       setAttachments(media); setAdded([]); setRemoved([]); setDraft(null);
       setConflict(false);
       setError(null);
@@ -142,8 +145,9 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
       if (kind === 'save') {
         if (draft) throw new Error('Review the source and tap Add to note, or discard it before saving.');
         const saved = captureIds.length || removed.length
-          ? await saveNoteWithAttachments(userId, note?.id ?? newMediaNoteId, content, captureIds, note ?? undefined, removed, !note && captureIds.includes(initialCaptureId ?? '') ? initialCaptureId : undefined)
-          : await saveNote(userId, content, note ?? undefined);
+          ? await saveNoteWithAttachments(userId, note?.id ?? newMediaNoteId, content, captureIds, note ?? undefined, removed, !note && captureIds.includes(initialCaptureId ?? '') ? initialCaptureId : undefined, title)
+          : await saveNote(userId, content, note ?? undefined, undefined, title);
+        setTitle(saved.title);
         added.forEach(item => removeLocalAsset(item.asset));
         noteSaved(saved);
         // Preserve independently edited context/source drafts when the main note saves.
@@ -186,6 +190,9 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
           <Message text={error} error />
 
           {conflict ? <TextAction title="Reload saved note" onPress={() => setConfirmReload(true)} disabled={Boolean(busy)} /> : null}
+          <TextInput accessibilityLabel="Note title" placeholder="Title (optional)" placeholderTextColor="#91899f"
+            style={noteStyles.editorTitle} value={title} onChangeText={setTitle} maxLength={MAX_NOTE_TITLE_LENGTH}
+            onFocus={() => setWriting(true)} onBlur={() => setWriting(false)} editable={!busy && !sourceBusy} />
           <TextInput accessibilityLabel="Note content" multiline style={noteStyles.editor}
             placeholder="Start with a thought…" placeholderTextColor="#91899f" autoFocus={!id}
             value={content} onFocus={() => setWriting(true)} onBlur={() => setWriting(false)} onChangeText={setContent} editable={!busy && !sourceBusy} maxLength={MAX_NOTE_LENGTH} />

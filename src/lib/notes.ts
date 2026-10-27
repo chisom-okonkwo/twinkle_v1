@@ -11,14 +11,14 @@ export type { Note, NoteVersion } from './notes-repository';
 export const listNotes = (userId: string, cursor?: NoteVersion) => createNotesRepository(getSupabase()).list(userId, cursor);
 export const getNote = (userId: string, id: string) => createNotesRepository(getSupabase()).get(userId, id);
 export const listAttachments = (noteId: string) => withDeadline(signal => createAttachmentsRepository(getSupabase()).list(noteId, signal), 15000);
-export async function saveNoteWithAttachments(userId: string, noteId: string, content: string, captureIds: string[], previous?: NoteVersion, removedIds: string[] = [], initialCaptureId?: string) {
-  const saved = await withDeadline(signal => createAttachmentsRepository(getSupabase()).save(noteId, content, captureIds, previous?.updated_at, signal, initialCaptureId), 20000);
+export async function saveNoteWithAttachments(userId: string, noteId: string, content: string, captureIds: string[], previous?: NoteVersion, removedIds: string[] = [], initialCaptureId?: string, title?: string) {
+  const saved = await withDeadline(signal => createAttachmentsRepository(getSupabase()).save(noteId, content, captureIds, previous?.updated_at, signal, initialCaptureId, title), 20000);
   void startSavedContext(userId, saved.id).catch(() => {});
   for (const id of removedIds) void withDeadline(() => discardCapture(id), 12000).catch(() => {});
   return saved;
 }
-export async function saveNote(userId: string, content: string, previous?: NoteVersion, source?: NoteSource) {
-  const saved = await createNotesRepository(getSupabase()).save(userId, content, previous, source);
+export async function saveNote(userId: string, content: string, previous?: NoteVersion, source?: NoteSource, title?: string) {
+  const saved = await createNotesRepository(getSupabase()).save(userId, content, previous, source, title);
   // A failed or interrupted AI request never changes whether the original saved.
   void startSavedContext(userId, saved.id).catch(() => {});
   return saved;

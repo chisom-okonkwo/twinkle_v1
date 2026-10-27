@@ -52,3 +52,14 @@ test('a verified media-only note needs no invented text and preserves its captur
  assert.equal(saved.content,'');assert.equal(saved.capture_method,'image');
  assert.equal(requests[0].body.initial_capture_id,'photo');assert.equal(requests[0].body.body,'');
 });
+
+test('mixed-media title edits are included in the same atomic save, with deliberate clearing',async()=>{
+ for(const title of ['A photo and recording','']) {
+  const {repo,requests}=fixture({id:'note',title,content:'Existing words'});
+  await repo.save('note','Existing words',['photo','audio'],'2026-01-01T00:00:00Z',undefined,undefined,title);
+  assert.equal(requests[0].body.note_title,title);
+  assert.equal(requests[0].body.body,'Existing words');
+  assert.deepEqual(requests[0].body.capture_ids,['photo','audio']);
+  assert.equal(requests.length,1);
+ }
+});

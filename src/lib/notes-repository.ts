@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
+import { normalizeNoteTitle } from './note-title.ts';
 
 export type Note = Database['public']['Tables']['notes']['Row'];
 export type NoteVersion = Pick<Note, 'id' | 'updated_at'>;
@@ -41,16 +42,17 @@ export function createNotesRepository(client: SupabaseClient<Database>) {
       if (!data) throw new Error('This note is no longer available. It may have been deleted in another session.');
       return data;
     },
-    async save(userId: string, content: string, previous?: NoteVersion, source?: NoteSource) {
+    async save(userId: string, content: string, previous?: NoteVersion, source?: NoteSource, title?: string) {
       validateNoteContent(content);
+      const heading = title === undefined ? {} : { title: normalizeNoteTitle(title) };
       const query = previous
-        ? client.from('notes').update({ content }).eq('user_id', userId)
+        ? client.from('notes').update({ content, ...heading }).eq('user_id', userId)
           .eq('id', previous.id).eq('updated_at', previous.updated_at)
-        : client.from('notes').insert({ user_id: userId, content, ...(source ? { id: source.id, capture_method: source.kind, source_capture_id: source.id } : {}) });
+        : client.from('notes').insert({ user_id: userId, content, ...heading, ...(source ? { id: source.id, capture_method: source.kind, source_capture_id: source.id } : {}) });
       const { data, error } = await query.select().maybeSingle();
       if (!previous && source && error) {
         const existing = await client.from('notes').select('*').eq('id', source.id).eq('user_id', userId).single();
-        if (!existing.error && existing.data?.source_capture_id === source.id && existing.data.content === content) return existing.data;
+        if (!existing.error && existing.data?.source_capture_id === source.id && existing.data.content === content && (title === undefined || existing.data.title === heading.title)) return existing.data;
         if (existing.data) throw new Error('This capture is already saved. Open it from Your notes to continue editing.');
       }
       if (error) throw error;

@@ -163,3 +163,7 @@ FR-18 adds **Import notes** for UTF-8 text, Markdown, and selected Google Keep J
 ## Media inside notes
 
 The note editor’s floating **+** offers **Photo** and **Audio**. Keep media with existing writing, or save a media-only note. Text extraction/transcription is optional, with review before appending. Notes support up to 10 private attachments and atomic saves. [Architecture, migrations, privacy and Android checks](docs/MEDIA-NOTES.md).
+
+## Editable note titles
+
+Notes now have an optional title above the body. Imported Keep titles can be renamed or cleared while original content, dates and provenance remain intact. Titles save atomically with text/media and update cards and search. [Migration, verification and Android checks](docs/NOTE-TITLES.md).
