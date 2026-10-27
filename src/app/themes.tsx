@@ -380,6 +380,7 @@ function ThemeCard({
       />
       {open ? (
         <>
+          <TextAction title="Explore across time" onPress={() => router.push({ pathname: '/reflect', params: { id: theme.id, kind: 'theme' } })} />
           <Text style={noteStyles.eyebrow}>RELATED THOUGHTS</Text>
           <Text style={noteStyles.meta}>
             {months

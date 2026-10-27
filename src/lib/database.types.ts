@@ -307,6 +307,48 @@ export type Database = {
           },
         ]
       }
+      note_reflections: {
+        Row: {
+          created_at: string
+          original_note_id: string
+          prompt_id: string
+          question: string
+          response_note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          original_note_id: string
+          prompt_id: string
+          question: string
+          response_note_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          original_note_id?: string
+          prompt_id?: string
+          question?: string
+          response_note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_reflections_original_note_id_user_id_fkey"
+            columns: ["original_note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "note_reflections_response_note_id_user_id_fkey"
+            columns: ["response_note_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       note_relations: {
         Row: {
           explanation: string
@@ -711,6 +753,10 @@ export type Database = {
         Args: { caller_id: string }
         Returns: undefined
       }
+      answer_reflective_prompt: {
+        Args: { body: string; prompt_id: string }
+        Returns: string
+      }
       authorize_capture_cleanup: { Args: { token: string }; Returns: boolean }
       authorize_recall_scheduler: { Args: { secret: string }; Returns: boolean }
       authorize_semantic_worker: { Args: { secret: string }; Returns: boolean }
@@ -784,6 +830,10 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_reflection_analysis: {
+        Args: { caller_id: string; kind: string; target_id: string }
+        Returns: Json
+      }
       claim_related_notes: {
         Args: { caller_id: string; retry?: boolean; target_id: string }
         Returns: Json
@@ -816,6 +866,10 @@ export type Database = {
         Args: { origin_id: string; target_id: string }
         Returns: undefined
       }
+      dismiss_reflective_prompt: {
+        Args: { prompt_id: string }
+        Returns: undefined
+      }
       end_semantic_run: {
         Args: {
           caller_id: string
@@ -844,6 +898,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      fail_reflection_analysis: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          kind: string
+          target_id: string
+        }
+        Returns: undefined
+      }
       fail_semantic_embeddings: {
         Args: { caller_id: string; claims: Json; failure: string }
         Returns: undefined
@@ -865,6 +928,17 @@ export type Database = {
           model_name: string
           payload: Json
           question: Json
+          target_id: string
+        }
+        Returns: boolean
+      }
+      finish_reflection_analysis: {
+        Args: {
+          caller_id: string
+          claim_token: string
+          expected_hash: string
+          kind: string
+          result: Json
           target_id: string
         }
         Returns: boolean
@@ -926,6 +1000,10 @@ export type Database = {
       }
       read_note_theme_members: {
         Args: { page_offset?: number; period?: string; target_id: string }
+        Returns: Json
+      }
+      read_reflection_experience: {
+        Args: { kind: string; target_id: string }
         Returns: Json
       }
       read_related_notes: {

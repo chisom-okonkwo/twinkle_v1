@@ -1,0 +1,11 @@
+{
+  "cases": [
+    {"key":"change","kind":"change","early":"I'm hesitant to apply for software engineering internships because I think I lack experience.","late":"I think waiting until I feel completely qualified is holding me back. I plan to start applying for software engineering internships.","observation":"The earlier note expresses hesitation about internship applications; the later note describes an intention to apply despite feeling unqualified.","question":"How do you view applying for software engineering internships now?"},
+    {"key":"continuity","kind":"continuity","early":"I believe a small daily drawing practice matters more than waiting for inspiration.","late":"I still believe showing up to draw each day matters more than waiting to feel inspired.","observation":"Both notes express the view that a regular drawing practice matters more than waiting for inspiration.","question":"How do you see daily drawing practice and inspiration now?"},
+    {"key":"unresolved","kind":"unresolved","early":"I'm considering a part-time design course, but I haven't decided whether I can make time for it.","late":"I'm still deciding whether to take the part-time design course. Finding enough time remains my question.","observation":"Both notes describe the design-course decision as open, with time availability still a concern in the later note.","question":"What are your thoughts about the part-time design course now?"},
+    {"key":"insufficient","kind":null,"early":"Creativity can be surprising.","late":"I saw a surprising blue sign near the library.","question":null},
+    {"key":"ambiguity","kind":null,"early":"A character in a book says discipline is everything.","late":"A colleague said motivation matters more than discipline.","question":null},
+    {"key":"sensitive","kind":null,"early":"I wrote about grief after a death in the family.","late":"I still think about the funeral.","question":null},
+    {"key":"reminder","kind":null,"early":"Buy milk tomorrow.","late":"Buy bread tomorrow.","question":null}
+  ]
+}

@@ -67,6 +67,7 @@ export default function FlashbackRoute() {
             Your original words and any added context are kept with the note.
           </Text>
           <TextAction title="Hide this flashback" onPress={() => void feedback('dismissed')} />
+          <TextAction title="Reflect on this thought" onPress={() => router.push({ pathname: '/reflect', params: { id: item.note_id, kind: 'note' } })} />
           <TextAction title="Not relevant · exclude this note" onPress={() => void feedback('irrelevant')} />
         </>
       ) : (

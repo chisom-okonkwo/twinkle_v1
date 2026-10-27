@@ -1,0 +1,135 @@
+{
+  "syntheticOnly": true,
+  "results": [
+    {
+      "scenario": "insufficient",
+      "expectedKind": null,
+      "actualKinds": [],
+      "comparisonCount": 0,
+      "promptSuggested": false,
+      "promptRequest": "cached",
+      "comparisonMs": 930,
+      "promptMs": 392,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question"
+      ]
+    },
+    {
+      "scenario": "change",
+      "expectedKind": "change",
+      "actualKinds": [
+        "change"
+      ],
+      "comparisonCount": 1,
+      "promptSuggested": false,
+      "promptRequest": "cached",
+      "comparisonMs": 931,
+      "promptMs": 522,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question"
+      ]
+    },
+    {
+      "scenario": "unresolved",
+      "expectedKind": "unresolved",
+      "actualKinds": [
+        "unresolved"
+      ],
+      "comparisonCount": 1,
+      "promptSuggested": true,
+      "promptRequest": "cached",
+      "comparisonMs": 963,
+      "promptMs": 297,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question",
+        "response idempotency",
+        "unchanged original",
+        "new-session persistence",
+        "response edit/search/delete",
+        "edit invalidation",
+        "delete invalidation"
+      ]
+    },
+    {
+      "scenario": "continuity",
+      "expectedKind": "continuity",
+      "actualKinds": [
+        "continuity"
+      ],
+      "comparisonCount": 1,
+      "promptSuggested": false,
+      "promptRequest": "cached",
+      "comparisonMs": 1081,
+      "promptMs": 1954,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question"
+      ]
+    },
+    {
+      "scenario": "ambiguity",
+      "expectedKind": null,
+      "actualKinds": [],
+      "comparisonCount": 0,
+      "promptSuggested": false,
+      "promptRequest": "processed",
+      "comparisonMs": 508,
+      "promptMs": 2064,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question"
+      ]
+    },
+    {
+      "scenario": "sensitive",
+      "expectedKind": null,
+      "actualKinds": [],
+      "comparisonCount": 0,
+      "promptSuggested": false,
+      "promptRequest": "unavailable",
+      "comparisonMs": 458,
+      "promptMs": 221,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question"
+      ]
+    },
+    {
+      "scenario": "reminder",
+      "expectedKind": null,
+      "actualKinds": [],
+      "comparisonCount": 0,
+      "promptSuggested": false,
+      "promptRequest": "processed",
+      "comparisonMs": 2084,
+      "promptMs": 1847,
+      "checks": [
+        "expected classifications",
+        "exact owned evidence",
+        "appropriate question"
+      ]
+    }
+  ],
+  "resolvedDecisionFollowUp": {
+    "scenario": "newer-note-explicit-resolution",
+    "status": "none",
+    "question": null,
+    "relatedEvidenceCount": 2
+  },
+  "notes": [
+    "Representative synthetic evaluation only; not a general accuracy guarantee.",
+    "Questions remain optional, including for positive comparisons.",
+    "Most recorded request timings are cached replays, not first-generation latency.",
+    "Independent verification can suppress otherwise plausible suggestions.",
+    "Authored response persistence/edit/delete and source edit/delete were verified through authenticated APIs."
+  ]
+}

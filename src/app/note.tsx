@@ -7,6 +7,7 @@ import { MAX_NOTE_TITLE_LENGTH } from '../lib/note-title';
 import { useCaptureConnections } from '../providers/capture-connections-provider';
 import { NoteSourcePanel } from '../components/note-source-panel';
 import { RelatedNotesPanel } from '../components/related-notes-panel';
+import { ReflectionOrigin } from '../components/reflection-origin';
 import { NoteRecallControl } from '../components/note-recall-control';
 import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -232,6 +233,7 @@ function NoteEditor({ userId, id }: { userId: string; id?: string }) {
             {note ? <NoteRecallControl userId={userId} noteId={note.id} disabled={Boolean(busy) || sourceBusy} /> : null}
             {note ? <TextAction title={busy === 'delete' ? 'Deleting…' : 'Delete note'} destructive
               disabled={Boolean(busy) || sourceBusy} onPress={() => setConfirmDelete(true)} /> : null}
+            {note && !dirty && !writing && !busy && !sourceBusy ? <><ReflectionOrigin noteId={note.id} /><TextAction title="Revisit this thought" onPress={() => router.push({ pathname: '/reflect', params: { id: note.id, kind: 'note' } })} /></> : null}
           </View>
         </ScrollView>}
       {!loading && !loadError ? <NoteMediaMenu disabled={Boolean(busy) || captureBusy || sourceBusy || Boolean(draft) || captureIds.length >= MAX_NOTE_ATTACHMENTS}

@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.semantic-worker]
 verify_jwt = false
+
+[functions.note-reflection]
+verify_jwt = false

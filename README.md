@@ -166,7 +166,11 @@ The note editor’s floating **+** offers **Photo** and **Audio**. Keep media wi
 
 ## Phase 2: themes and related groups
 
-FR-19/20 add **Discover thoughts → Themes in your notes**. Private persistent embeddings connect coherent subjects across different wording, including titles and imports. Two-note groups are useful; recurrence requires three reliably dated notes across two local dates. All time/Past 90 days, original evidence, saved names/dismissals and durable background progress keep discovery inspectable. Imports wait for an explicit choice; unchanged results reuse cached work. See [deployment, evaluation, limitations and Android testing](docs/THEMES.md). FR-21 and later remain out of scope.
+FR-19/20 add **Discover thoughts → Themes in your notes**. Private persistent embeddings connect coherent subjects across different wording, including titles and imports. Two-note groups are useful; recurrence requires three reliably dated notes across two local dates. All time/Past 90 days, original evidence, saved names/dismissals and durable background progress keep discovery inspectable. Imports wait for an explicit choice; unchanged results reuse cached work. See [deployment, evaluation, limitations and Android testing](docs/THEMES.md).
+
+## Phase 2: revisiting thinking
+
+FR-21/22 add optional **Explore across time** comparisons from themes and **Revisit this thought** from saved notes/flashbacks. Reliable dates, original excerpts and independent evidence checks keep comparisons inspectable. Occasional reflective questions can be answered as separately linked, searchable notes; originals stay unchanged. See [reflection storage, deployment, limits and Android checks](docs/REFLECTIONS.md). FR-23 and later remain out of scope.
 
 ## Editable note titles
 

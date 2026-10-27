@@ -1,6 +1,6 @@
 # Themes and shared ideas (FR-19/20)
 
-Twinkle privately prepares saved notes for semantic comparison, retrieves a few neighbours, checks coherent groups, and saves only supported memberships. The existing **Discover thoughts → Themes in your notes** screen keeps All time / Past 90 days, original-note links, editable names and dismissal. Capture, keyword search, imports, media, contextual enrichment and push delivery keep their existing flows. FR-21+ is not implemented.
+Twinkle privately prepares saved notes for semantic comparison, retrieves a few neighbours, checks coherent groups, and saves only supported memberships. The existing **Discover thoughts → Themes in your notes** screen keeps All time / Past 90 days, original-note links, editable names and dismissal. Capture, keyword search, imports, media, contextual enrichment and push delivery keep their existing flows. The later [FR-21/22 reflection experience](REFLECTIONS.md) reuses these groups and dates.
 
 ## Representation and reuse
 

@@ -36,6 +36,7 @@ function Routes() {
           <Stack.Screen name="search" />
           <Stack.Screen name="discover" />
           <Stack.Screen name="themes" />
+          <Stack.Screen name="reflect" />
           <Stack.Screen name="import" />
           <Stack.Screen name="flashback" />
           <Stack.Screen name="recall-settings" />
