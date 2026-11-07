@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, TextInput } from 'react-native';
 
@@ -64,6 +65,7 @@ export default function SignInScreen() {
       <Action title={busy ? 'Please wait…' : register ? 'Create account' : 'Sign in'} disabled={busy} onPress={submit} />
       <Action title={register ? 'Already have an account? Sign in' : 'New here? Create an account'} disabled={busy} secondary
         onPress={() => { setRegister(!register); setPassword(''); setError(null); setMessage(null); }} />
+      <Action title="Explore the new design" secondary onPress={() => router.push('/preview')} />
     </Screen>
   );
 }

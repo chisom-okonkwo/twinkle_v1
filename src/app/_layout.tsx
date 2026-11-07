@@ -1,5 +1,5 @@
 import { CaptureConnectionsProvider } from '../providers/capture-connections-provider';
-import { Stack } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Text } from 'react-native';
 
@@ -10,14 +10,16 @@ import { AuthProvider, useAuth } from '../providers/auth-provider';
 
 function Routes() {
   const { session, loading } = useAuth();
-  if (configurationError)
+  const segments = useSegments();
+  const isDesignPreview = segments[0] === 'preview';
+  if (configurationError && !isDesignPreview)
     return (
       <Screen>
         <Text style={styles.title}>Set up Twinkle</Text>
         <Text style={styles.subtitle}>{configurationError}</Text>
       </Screen>
     );
-  if (loading)
+  if (loading && !isDesignPreview)
     return (
       <Screen>
         <ActivityIndicator accessibilityLabel="Restoring your session" />
@@ -41,6 +43,7 @@ function Routes() {
           <Stack.Screen name="flashback" />
           <Stack.Screen name="recall-settings" />
         </Stack.Protected>
+        <Stack.Screen name="preview" />
       </Stack>
     </CaptureConnectionsProvider>
   );

@@ -1,3 +1,7 @@
+# Screen design preview
+
+The new screen-first Twinkle concept is available at `/preview`, or through **Explore the new design** on the existing home and sign-in screens. See the [preview guide and screenshots](docs/design-preview/README.md). It uses temporary sample notes.
+
 # Twinkle V1
 
 Private text, photo, and audio notes with optional context enrichment and intelligent recall, built within the existing Expo SDK 58 / React Native / TypeScript project. The guiding document is [Twinkle V1 — Product & Technical Reference](./Twinkle%20V1%20%E2%80%94%20Product%20%26%20Technical%20Reference.md).
